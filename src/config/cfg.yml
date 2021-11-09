@@ -1,0 +1,50 @@
+# the base config for pg-engine
+
+Engine:
+  root_dir: 
+  idx: 0
+  #
+  Module:
+    scene:
+    material:
+    render:
+    mode: SMPL
+
+  #
+  SMPL:
+    smpl_dir:
+    smpl_data_filename:
+    
+  #
+  Material:
+    osl: 
+    light:
+  #
+  Renderer:
+    engine: CYCLES
+    resx: 480
+    resy: 640
+    camera: 
+
+  #
+  Model:
+    SMPL:
+      online: False
+      smpl_dir:
+      smpl_data_filename:
+      
+      
+output:
+  format: video # image
+  segmentation: False
+  depth: False
+  normal: False
+  fg: False
+  gtflow: False
+
+  labels:
+    landmark2d: True
+    landmark3d: True
+    
+
+    
