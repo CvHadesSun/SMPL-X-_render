@@ -24,27 +24,44 @@ Engine:
     engine: CYCLES
     resx: 480
     resy: 640
+    zrot_euler: 
     camera: 
+      cam_dist:
+      cam_height:
 
   #
   Model:
     SMPL:
       online: False
+      gender: female
       smpl_dir:
       smpl_data_filename:
+      smpl_model_name: basicModel_f_lbs_10_207_0_v1.0.2.fbx
       
-      
-output:
-  format: video # image
-  segmentation: False
-  depth: False
-  normal: False
-  fg: False
-  gtflow: False
 
-  labels:
-    landmark2d: True
-    landmark3d: True
+  output:
+    format: video # image
+    segmentation: False
+    depth: False
+    normal: False
+    fg: False
+    gtflow: False
+    labels:
+      format: .mat
+      output_name: label_info
+      output_path: 
+      bg: True
+      cloth: True
+      gender: True
+      joints2D: True
+      joints3D: True
+      pose: False
+      shape: False
+      source: False
+      zrot_euler: False
+      light:  False
+      cam_height:  False
+      cam_dist: False
     
 
     

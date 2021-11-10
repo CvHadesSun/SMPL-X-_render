@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:33
-LastEditTime: 2021-11-09 17:56:07
+LastEditTime: 2021-11-10 15:07:53
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/src/lib/model/SMPL.py
 '''
@@ -17,12 +17,13 @@ from tools.geometryutils import rodrigues2bshapes
 
 
 class SMPL_Body:
-    def __init__(self, smpl_data_folder, material, gender="female", person_no=0):
+    def __init__(self, cfg,smpl_data_folder, material, gender="female", person_no=0):
         # load fbx model
+        self.cfg=cfg
         bpy.ops.import_scene.fbx(
             filepath=os.path.join(
                 smpl_data_folder,
-                "basicModel_{}_lbs_10_207_0_v1.0.2.fbx".format(gender[0]),
+                cfg.Engine.Model.SMPL.smpl_model_name,
             ),
             axis_forward="Y",
             axis_up="Z",
