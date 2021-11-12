@@ -32,6 +32,7 @@ Engine:
   #
   Model:
     SMPL:
+      max_num: 10
       online: False
       gender: female
       smpl_dir:
