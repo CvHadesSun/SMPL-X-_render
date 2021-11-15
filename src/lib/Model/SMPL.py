@@ -17,13 +17,14 @@ from tools.geometryutils import rodrigues2bshapes
 
 
 class SMPL_Body:
-    def __init__(self, cfg,smpl_data_folder, material, gender="female", person_no=0):
+    def __init__(self, cfg, material, gender="female", person_no=0):
         # load fbx model
+        smpl_data_folder=cfg.Engine.Model.SMPL.smpl_dir
         self.cfg=cfg
         bpy.ops.import_scene.fbx(
             filepath=os.path.join(
                 smpl_data_folder,
-                cfg.Engine.Model.SMPL.smpl_model_name,
+                "basicModel_{}_lbs_10_207_0_v1.0.2.fbx".format(gender[0]),
             ),
             axis_forward="Y",
             axis_up="Z",

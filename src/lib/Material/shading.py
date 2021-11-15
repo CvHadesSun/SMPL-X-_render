@@ -10,11 +10,15 @@ import bpy
 # create_sh_material(material.node_tree, sh_dst, cloth_img_name)
 
 class Material:
-    def __init__(self,cfg) -> None:
+    def __init__(self,cfg,id) -> None:
         self.cfg=cfg
+        self.material = bpy.data.materials.new(name="Material_{}".format(id))
+        self.material.use_nodes = True
+        self.new_tree()
 
-    def new_tree(self,tree,sh_dst,cloth_img_name):
+    def new_tree(self,sh_dst,cloth_img_name):
         # clear default nodes
+        tree=self.material.node_tree
         for n in tree.nodes:
             tree.nodes.remove(n)
 

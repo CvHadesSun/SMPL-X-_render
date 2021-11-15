@@ -1,7 +1,7 @@
 # the base config for pg-engine
 
 Engine:
-  root_dir: 
+  root_dir:
   idx: 0
   #
   Module:
@@ -14,18 +14,18 @@ Engine:
   SMPL:
     smpl_dir:
     smpl_data_filename:
-    
+
   #
   Material:
-    osl: 
+    osl:
     light:
   #
   Renderer:
     engine: CYCLES
     resx: 480
     resy: 640
-    zrot_euler: 
-    camera: 
+    zrot_euler:
+    camera:
       cam_dist:
       cam_height:
 
@@ -37,15 +37,22 @@ Engine:
       gender: female
       smpl_dir:
       smpl_data_filename:
-      smpl_model_name: basicModel_f_lbs_10_207_0_v1.0.2.fbx
-      
+#      smpl_model_name: basicModel_f_lbs_10_207_0_v1.0.2.fbx
+
   input:
-    bg_images_dir:
-    uv_textures_dir:
+    bg_images:
+      dir:
+      txt:
+      data:
+      clothing_option: nongrey
+    uv_textures:
+      dir:
+      data:
+      label:
 
   output:
     format: video # image
-    output_path: 
+    output_path:
     segmentation: False
     depth: False
     normal: False
@@ -63,8 +70,8 @@ Engine:
       shape: False
       source: False
       zrot_euler: False
-      light:  False
-      cam_height:  False
+      light: False
+      cam_height: False
       cam_dist: False
     
 

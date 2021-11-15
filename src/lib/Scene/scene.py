@@ -6,21 +6,20 @@ LastEditors: Please set LastEditors
 FilePath: /PG-engine/src/lib/scene/scene.py
 '''
 
+import bby
 
-# import bby
 
+class Scene:
+    def __init__(self, cfg) -> None:
+        # init the scene in the blender.
+        self.scene = bpy.data.scenes["Scene"]
+        self.scene.render.engine = cfg.Engine.renderer  # "CYCLES"
+        self.scene.cycles.shading_system = True
+        self.scene.use_nodes = True
+        self.scene.render.film_transparent = True
 
-# class Scene:
-#     def __init__(self,cfg) -> None:
-#         #init the scene in the blender.
-#         self.scene = bpy.data.scenes["Scene"]
-#         self.scene.render.engine = cfg.Engine.renderer #"CYCLES"
-#         self.scene.cycles.shading_system = True
-#         self.scene.use_nodes = True
-#         self.scene.render.film_transparent = True
+    def get_scene(self):
+        return self.scene
 
-#     def get_scene(self):
-#         return self.scene
-
-#     def init_scene(self)-> None:
-#         bpy.ops.object.delete()
+    def reset_scene(self) -> None:
+        bpy.ops.object.delete()
