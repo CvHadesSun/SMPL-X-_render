@@ -9,12 +9,6 @@ Engine:
     material:
     render:
     mode: SMPL
-
-  #
-  SMPL:
-    smpl_dir:
-    smpl_data_filename:
-
   #
   Material:
     osl:
@@ -24,10 +18,10 @@ Engine:
     engine: CYCLES
     resx: 480
     resy: 640
-    zrot_euler:
     camera:
       cam_dist:
       cam_height:
+      zrot_euler:
 
   #
   Model:

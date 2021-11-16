@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-12 11:25:44
+LastEditTime: 2021-11-16 11:55:45
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -10,18 +10,22 @@ import os
 import sys
 import bpy
 import numpy as np
+import shutil
+from mathutils import Vector
 
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-root_dir = os.path.join(cur_dir, '..')
-sys.path.insert(0, os.path.join(root_dir, 'src'))
+# cur_dir = os.path.dirname(os.path.abspath(__file__))
+# root_dir = os.path.join(cur_dir, '..')
+# sys.path.insert(0, os.path.join(root_dir, 'src'))
 
 from tools.file_op import mkdir_safe
-from tools.random_utils import pick_background, pick_texture, gender_generator, pick_shape_whole
+from tools.random_utils import pick_background, pick_texture, gender_generator, pick_shape_whole,pick_cam
 from lib.Scene.scene import Scene
 from lib.Material.shading import Material
 from lib.Model.SMPL import SMPL_Body
 from lib.Render.compositing import RenderLayer
-import random
+from tools.light import random_light
+from tools.cam import set_camera
+from tools.os_utils import *
 
 
 # TODO: the pipeline of data generation
@@ -44,7 +48,7 @@ class PipeLine:
         if cfg.Engine.output.output is not None:
             self.output_path = cfg.Engine.output.output
         else:
-            self.output_path = os.path.join(root_dir, 'output')
+            self.output_path = os.path.join(cfg.Engine.dir.root_dir, 'output')
         mkdir_safe(self.output_path)
         mkdir_safe(os.path.join(self.output_path, name))
         self.output = os.path.join(self.output_path, name)
@@ -52,6 +56,11 @@ class PipeLine:
         self.tmp_path = os.path.join(self.output_path, 'experimental')
         self.cfg.Engine.tmp_path=self.tmp_path
         mkdir_safe(self.tmp_path)
+        #cp osl into tmp dir
+        osl=cfg.Material.osl
+        shutil.copy(osl,os.path.join(self.tmp_path,'mat_osl.osl'))
+        # update osl path
+        self.cfg.Material.osl=os.path.join(self.tmp_path,'mat_osl.osl')
         #
         if not genders:
             self.genders = genders
@@ -67,6 +76,7 @@ class PipeLine:
         self._set_obj_cloth_imgs()
         # init the scene
         self.init_scene()
+        self.num_frames=0
 
     def _set_bg(self):
         if not self.bg_img:
@@ -80,7 +90,7 @@ class PipeLine:
         # init model
         self._init_model()
         # update the material scripts
-        sh_coeffs=self.random_light()
+        sh_coeffs=random_light()
         spherical_harmonics = []
         for mname, m in self.obj_list[0].materials.items():
             spherical_harmonics.append(m.node_tree.nodes["Script"])
@@ -95,17 +105,21 @@ class PipeLine:
         self.renderer.init_tree_nodes(self.scene.node_tree,self.bg_img)
         self.renderer.init_renderer()
 
+        # set cam
+        # random get cam params
+        # cam_height, cam_dist = pick_cam(self.cfg.Engine.Renderer.camera.cam, cam_dist_range)
+        cam_height = self.cfg.Engine.Renderer.camera.cacam_height
+        cam_dist = self.cfg.Engine.Renderer.camera.cacam_height
+        self.cam_ob = set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=self.cfg.Engine.Renderer.camera.zrot_euler)
+
+        for id in range(self.num_object):
+            self.obj_list[id].reset_joint_positions(
+            self.shape[id], self.scene, self.cam_ob
+            )
+        # smpl_body_list[person_no].arm_ob.animation_data_clear()
+        self.cam_ob.animation_data_clear()
 
 
-
-
-    def random_light(self):
-        # Random light
-        sh_coeffs = 0.7 * (2 * np.random.rand(9) - 1)
-        # Ambient light (first coeff) needs a minimum  is ambient. Rest is uniformly distributed, higher means brighter.
-        sh_coeffs[0] = 0.5 + 0.9 * np.random.rand()
-        sh_coeffs[1] = -0.7 * np.random.rand()
-        return sh_coeffs
 
     def _init_model(self):
         #
@@ -136,5 +150,47 @@ class PipeLine:
     #         # input the pose and shape data info.
     #         pass
 
-    def apply_input(self, name):
-        pass
+    def apply_input(self,**frame_info):
+        # input per frame info: pose and trans
+        pose=frame_info['pose']  #[N,72]
+        trans=frame_info['trans'] #[N,3]
+        
+
+        for id in range(self.num_object):
+            s=self.shape[id]
+            p=pose[id]
+            t=trans[id]
+            # apply the translation, pose and shape to the character
+            self.smpl_body_list[id].apply_trans_pose_shape(
+                Vector(t), p, s, self.scene, self.cam_ob, self.num_frames)
+
+            bpy.context.view_layer.update()
+        self.num_frames +=1  #
+
+        
+    def render(self):
+        #
+        for part, material in self.obj_list[0].materials.items():
+            material.node_tree.nodes["Vector Math"].inputs[1].default_value[:2] = (0, 0)
+        
+        # LOOP TO RENDER: iterate over the keyframes and render
+        
+        rgb_path=mkdir_safe(os.path.join(self.tmp_path,'rgb'))
+        # mkdir dir to output
+        for seq_frame, i in enumerate(range(self.num_frames)):
+            self.scene.frame_set(seq_frame)
+            self.scene.render.filepath = os.path.join(rgb_path, "Image{:04d}.png".format(seq_frame))
+            # disable render output
+            old = disable_output_start()
+            # Render
+            bpy.ops.render.render(write_still=True)
+            # disable output redirection
+            disable_output_end(old)
+
+    
+            
+
+
+
+        
+        

@@ -101,3 +101,8 @@ def gender_generator(num_obj):
     for i in range(num_obj):
         genders.append(choice(['female', 'male']))
     return genders
+
+def pick_cam(cam_height_range, cam_dist_range):
+    cam_height = random.uniform(cam_height_range[0], cam_height_range[1])
+    cam_dist = random.uniform(cam_dist_range[0], cam_dist_range[1])
+    return cam_height, cam_dist
