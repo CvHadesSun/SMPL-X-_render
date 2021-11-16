@@ -16,12 +16,12 @@ Engine:
 #   #
   Renderer:
     engine: CYCLES
-    resx: 480
-    resy: 640
+    resx: 1080
+    resy: 1920
     camera:
-      cam_dist: 4
-      cam_height: 3
-      zrot_euler: 0 # 0 45 90 135 180 225 270 315
+      cam_dist: 8.0
+      cam_height: 1.0
+      zrot_euler: 0.0 # 0 45 90 135 180 225 270 315
 
 #   #
   Model:

@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-16 15:28:28
+LastEditTime: 2021-11-16 15:53:24
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -125,6 +125,7 @@ class PipeLine:
         if not self.shape:
             self.shape=[]
         self.smpl_data = np.load(os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir, self.cfg.Engine.Model.SMPL.smpl_data_filename))
+        self.scene.reset_scene()
         for id in range(self.num_object):
             gender = self.genders[id]
             try:

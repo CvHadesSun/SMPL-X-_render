@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 17:12:57
-LastEditTime: 2021-11-16 15:14:41
+LastEditTime: 2021-11-16 16:11:31
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/main.py
 '''
@@ -12,7 +12,7 @@ FilePath: /PG-engine/run/main.py
 import os
 import sys
 
-from numpy import number
+import cv2
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(cur_dir,'..')
@@ -26,15 +26,18 @@ cfg.Engine.root_dir = root_dir
 from pipeline import PipeLine
 
 
-name='debug'
+name='debug1'
 num_model=1
 render=PipeLine(cfg,name, num_model, 
                 genders=['female'],
-                bg_img='/home/hades/workspace/data/pg-engine/bg_imgs/backgrounds/train/S001C002P001R002A009_0.jpg',
+                bg_img='../input/test1.jpg',
                 textures=['/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/nongrey_female_0120.jpg']
                 )
 
 
+# '/home/hades/workspace/data/pg-engine/bg_imgs/backgrounds/train/S001C002P001R002A009_0.jpg',
+# img=cv2.imread('../input/test.jpg')
+# print(img.shape)
 
 # input pose and shape for render.
 
@@ -50,7 +53,7 @@ def load_input(name,smpl_result_path):
                 name=name,
                 smpl_result_path=smpl_result_path,
                 track_id=tid,
-                with_trans=0,
+                with_trans=1,
                 use_pose_smooth=1,
                 datasetname='ntu'
             )
@@ -62,11 +65,11 @@ def load_input(name,smpl_result_path):
     return pose_data,trans_data
 
 
-pose,trans=load_input('S001C001P001R002A003','/home/hades/workspace/surreact/datageneration/data/ntu/vibe/train')
+pose,trans=load_input('S001C001P001R002A004','/home/hades/workspace/surreact/datageneration/data/ntu/vibe/train')
 
 id=0
 
-for i in range(5):
+for i in range(2):
     p=pose[id][i].reshape(1,-1)
     t=trans[id][i].reshape(1,-1)
     render.apply_input(pose=p,trans=t)
