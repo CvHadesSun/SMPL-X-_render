@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:45:40
-LastEditTime: 2021-11-09 18:05:32
+LastEditTime: 2021-11-16 14:35:11
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/src/lib/material/shading.py
 '''
@@ -10,13 +10,14 @@ import bpy
 # create_sh_material(material.node_tree, sh_dst, cloth_img_name)
 
 class Material:
-    def __init__(self,cfg,id) -> None:
+    def __init__(self,cfg,id,cloth_img_name) -> None:
         self.cfg=cfg
         self.material = bpy.data.materials.new(name="Material_{}".format(id))
         self.material.use_nodes = True
-        self.new_tree()
+        self.new_tree(cloth_img_name)
 
-    def new_tree(self,sh_dst,cloth_img_name):
+    def new_tree(self,cloth_img_name):
+        sh_dst=self.cfg.Engine.Material.osl
         # clear default nodes
         tree=self.material.node_tree
         for n in tree.nodes:

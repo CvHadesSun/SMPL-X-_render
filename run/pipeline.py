@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-16 11:55:45
+LastEditTime: 2021-11-16 15:28:28
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -45,22 +45,22 @@ class PipeLine:
         '''
         self.cfg = cfg
         # set the output path
-        if cfg.Engine.output.output is not None:
-            self.output_path = cfg.Engine.output.output
-        else:
-            self.output_path = os.path.join(cfg.Engine.dir.root_dir, 'output')
+        # if cfg.Engine.output.root_dir is not None:
+        #     self.output_path = cfg.Engine.output.output
+        # else:
+        self.output_path = os.path.join(cfg.Engine.root_dir, 'output')
         mkdir_safe(self.output_path)
         mkdir_safe(os.path.join(self.output_path, name))
         self.output = os.path.join(self.output_path, name)
         # mdkir tmp path
-        self.tmp_path = os.path.join(self.output_path, 'experimental')
+        self.tmp_path = os.path.join(self.output, 'experimental')
         self.cfg.Engine.tmp_path=self.tmp_path
         mkdir_safe(self.tmp_path)
         #cp osl into tmp dir
-        osl=cfg.Material.osl
+        osl=cfg.Engine.Material.osl
         shutil.copy(osl,os.path.join(self.tmp_path,'mat_osl.osl'))
         # update osl path
-        self.cfg.Material.osl=os.path.join(self.tmp_path,'mat_osl.osl')
+        self.cfg.Engine.Material.osl=os.path.join(self.tmp_path,'mat_osl.osl')
         #
         if not genders:
             self.genders = genders
@@ -73,7 +73,6 @@ class PipeLine:
         self.obj_list = []
         # assign the bg and textures
         self._set_bg()
-        self._set_obj_cloth_imgs()
         # init the scene
         self.init_scene()
         self.num_frames=0
@@ -102,19 +101,19 @@ class PipeLine:
                 sc.inputs[ish + 1].default_value = coeff
 
         #render
-        self.renderer.init_tree_nodes(self.scene.node_tree,self.bg_img)
+        self.renderer.init_tree_nodes(self.scene.scene.node_tree,self.bg_img)
         self.renderer.init_renderer()
 
         # set cam
         # random get cam params
         # cam_height, cam_dist = pick_cam(self.cfg.Engine.Renderer.camera.cam, cam_dist_range)
-        cam_height = self.cfg.Engine.Renderer.camera.cacam_height
-        cam_dist = self.cfg.Engine.Renderer.camera.cacam_height
+        cam_height = self.cfg.Engine.Renderer.camera.cam_height
+        cam_dist = self.cfg.Engine.Renderer.camera.cam_dist
         self.cam_ob = set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=self.cfg.Engine.Renderer.camera.zrot_euler)
 
         for id in range(self.num_object):
             self.obj_list[id].reset_joint_positions(
-            self.shape[id], self.scene, self.cam_ob
+            self.shape[id], self.scene.scene, self.cam_ob
             )
         # smpl_body_list[person_no].arm_ob.animation_data_clear()
         self.cam_ob.animation_data_clear()
@@ -123,7 +122,9 @@ class PipeLine:
 
     def _init_model(self):
         #
-        self.smpl_data = np.load(self.cfg.Engine.Model.SMPL.smpl_dir, self.cfg.Engine.Model.SMPL.smpl_data_filename)
+        if not self.shape:
+            self.shape=[]
+        self.smpl_data = np.load(os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir, self.cfg.Engine.Model.SMPL.smpl_data_filename))
         for id in range(self.num_object):
             gender = self.genders[id]
             try:
@@ -133,7 +134,7 @@ class PipeLine:
                                        self.cfg.Engine.input.bg_images.dir,
                                        self.cfg.Engine.input.bg_images.txt)
                 self.textures.append(texture)
-            material = Material(self.cfg, id)
+            material = Material(self.cfg, id,texture)
             smpl = SMPL_Body(self.cfg, material.material, gender=self.genders[id], person_no=id)
             self.obj_list.append(smpl)
 
@@ -143,12 +144,6 @@ class PipeLine:
                 shape = pick_shape_whole(self.smpl_data, gender)
             self.shape.append(shape)
 
-    # def _pose_shape_gen(self):
-    #     if self.online:
-    #         print('need to implement.')
-    #     else:
-    #         # input the pose and shape data info.
-    #         pass
 
     def apply_input(self,**frame_info):
         # input per frame info: pose and trans
@@ -161,8 +156,8 @@ class PipeLine:
             p=pose[id]
             t=trans[id]
             # apply the translation, pose and shape to the character
-            self.smpl_body_list[id].apply_trans_pose_shape(
-                Vector(t), p, s, self.scene, self.cam_ob, self.num_frames)
+            self.obj_list[id].apply_trans_pose_shape(
+                Vector(t), p, s, self.scene.scene, self.cam_ob, self.num_frames)
 
             bpy.context.view_layer.update()
         self.num_frames +=1  #
@@ -175,11 +170,12 @@ class PipeLine:
         
         # LOOP TO RENDER: iterate over the keyframes and render
         
-        rgb_path=mkdir_safe(os.path.join(self.tmp_path,'rgb'))
+        mkdir_safe(os.path.join(self.tmp_path,'rgb'))
+        rgb_path=os.path.join(self.tmp_path,'rgb')
         # mkdir dir to output
         for seq_frame, i in enumerate(range(self.num_frames)):
-            self.scene.frame_set(seq_frame)
-            self.scene.render.filepath = os.path.join(rgb_path, "Image{:04d}.png".format(seq_frame))
+            self.scene.scene.frame_set(seq_frame)
+            self.scene.scene.render.filepath = os.path.join(rgb_path, "Image{:04d}.png".format(seq_frame))
             # disable render output
             old = disable_output_start()
             # Render

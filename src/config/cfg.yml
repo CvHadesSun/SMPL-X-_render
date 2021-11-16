@@ -1,52 +1,53 @@
 # the base config for pg-engine
 
-Engine:
-  root_dir:
+Engine: 
+  root_dir: root_path
   idx: 0
   #
-  Module:
-    scene:
-    material:
-    render:
-    mode: SMPL
-  #
+#   Module:
+#     scene:
+#     material:
+#     render:
+#     mode: SMPL
+#   #
   Material:
-    osl:
-    light:
-  #
+    osl: /home/hades/workspace/surreact/datageneration/spher_harm/sh.osl
+    # light: 
+#   #
   Renderer:
     engine: CYCLES
     resx: 480
     resy: 640
     camera:
-      cam_dist:
-      cam_height:
-      zrot_euler:
+      cam_dist: 4
+      cam_height: 3
+      zrot_euler: 0 # 0 45 90 135 180 225 270 315
 
-  #
+#   #
   Model:
     SMPL:
       max_num: 10
       online: False
       gender: female
-      smpl_dir:
-      smpl_data_filename:
+      smpl_dir: /home/hades/workspace/surreact/datageneration/smpl_data
+      smpl_data_filename: smpl_data.npz
+      segm_overlap: segm_per_v_overlap.pkl
 #      smpl_model_name: basicModel_f_lbs_10_207_0_v1.0.2.fbx
 
   input:
     bg_images:
-      dir:
-      txt:
-      data:
+      dir: /home/hades/workspace/data/pg-engine/bg_imgs/backgrounds
+      txt: test_img.txt
+      data: test
       clothing_option: nongrey
     uv_textures:
-      dir:
-      data:
-      label:
+      dir: /home/hades/workspace/surreact/datageneration/smpl_data/textures
+      data: female
+      label: female_all.txt
 
   output:
     format: video # image
-    output_path:
+    root_dir: output
     segmentation: False
     depth: False
     normal: False

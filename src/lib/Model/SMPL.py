@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:33
-LastEditTime: 2021-11-10 15:07:53
+LastEditTime: 2021-11-16 14:39:54
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/src/lib/model/SMPL.py
 '''
@@ -136,7 +136,8 @@ class SMPL_Body:
         part2num = {part: (ipart + 1) for ipart, part in enumerate(sorted_parts)}
         materials = {}
         vgroups = {}
-        with open("smpl_data/segm_per_v_overlap.pkl", "rb") as f:
+        segm_path=os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir,self.cfg.Engine.Model.SMPL.segm_overlap)
+        with open(segm_path, "rb") as f:
             vsegm = pkl.load(f)
         bpy.ops.object.material_slot_remove()
         parts = sorted(vsegm.keys())
