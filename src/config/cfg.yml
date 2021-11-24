@@ -3,6 +3,7 @@
 Engine: 
   root_dir: root_path
   idx: 0
+  output_dir: output
   #
 #   Module:
 #     scene:
@@ -22,6 +23,8 @@ Engine:
       cam_dist: 8.0
       cam_height: 1.0
       zrot_euler: 0.0 # 0 45 90 135 180 225 270 315
+      cam_dist_range: [5,10]
+      cam_height_range: [-5,-5]
 
 #   #
   Model:
@@ -48,11 +51,11 @@ Engine:
   output:
     format: video # image
     root_dir: output
-    segmentation: False
-    depth: False
-    normal: False
-    fg: False
-    gtflow: False
+    segmentation: True
+    depth: True
+    normal: True
+    fg: True
+    gtflow: True
     labels:
       format: .mat
       output_name: label_info

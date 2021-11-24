@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 15:10:24
-LastEditTime: 2021-11-10 15:13:31
+LastEditTime: 2021-11-24 16:20:39
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/src/tools/cam.py
 '''
@@ -34,7 +34,7 @@ def set_camera(cam_dist=7, cam_height=1, zrot_euler=0):
     # cam_ob.matrix_world = cam_trans * cam_rot * cam_rot_z * cam_rot_x  # blender < 2.8x
     cam_ob.matrix_world = cam_trans @ cam_rot @ cam_rot_z @ cam_rot_x
 
-    cam_ob.data.angle = math.radians(40)
+    cam_ob.data.angle = math.radians(60)
     cam_ob.data.lens = 60
     cam_ob.data.clip_start = 0.1
     cam_ob.data.sensor_width = 32

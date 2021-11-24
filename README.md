@@ -1,7 +1,7 @@
 <!--
  * @Author: cvhades
  * @Date: 2021-11-09 16:15:16
- * @LastEditTime: 2021-11-19 10:36:59
+ * @LastEditTime: 2021-11-24 15:33:28
  * @LastEditors: Please set LastEditors
  * @FilePath: /PG-engine/README.md
 -->
@@ -37,3 +37,13 @@ The engine to generate human pose dataset based on blender.(blender2.92).  Commi
 - [x] labels
 
 
+## Some detail
+
+### camera 
+```
+Euler "XYZ":[yaw,pitch,roll]
+
+X->r
+Y->p
+Z->y
+```

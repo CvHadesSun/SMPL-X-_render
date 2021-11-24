@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-19 14:59:51
+LastEditTime: 2021-11-24 18:01:34
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -31,7 +31,7 @@ from tools.os_utils import *
 # TODO: the pipeline of data generation
 
 class PipeLine:
-    def __init__(self, cfg, name, num_model, genders=None, bg_img=None, textures=None, shape=None) -> None:
+    def __init__(self, cfg, prefix,name, num_model, genders=None, bg_img=None, textures=None, shape=None,sh_coeffs=None) -> None:
         '''
         output-|
                 |--name
@@ -48,7 +48,7 @@ class PipeLine:
         # if cfg.Engine.output.root_dir is not None:
         #     self.output_path = cfg.Engine.output.output
         # else:
-        self.output_path = os.path.join(cfg.Engine.root_dir, 'output')
+        self.output_path = os.path.join(cfg.Engine.output_dir, prefix)
         mkdir_safe(self.output_path)
         mkdir_safe(os.path.join(self.output_path, name))
         self.output = os.path.join(self.output_path, name)
@@ -62,7 +62,7 @@ class PipeLine:
         # update osl path
         self.cfg.Engine.Material.osl=os.path.join(self.tmp_path,'mat_osl.osl')
         #
-        if not genders:
+        if  genders:
             self.genders = genders
         else:
             self.genders = gender_generator(num_model)
@@ -70,6 +70,11 @@ class PipeLine:
         self.textures = textures
         self.bg_img = bg_img
         self.shape = shape
+
+        if not sh_coeffs:
+            self.sh_coeffs=random_light()
+        else:
+            self.sh_coeffs=sh_coeffs
         self.obj_list = []
         # assign the bg and textures
         self._set_bg()
@@ -89,14 +94,14 @@ class PipeLine:
         # init model
         self._init_model()
         # update the material scripts
-        sh_coeffs=random_light()
+        
         spherical_harmonics = []
         for mname, m in self.obj_list[0].materials.items():
             spherical_harmonics.append(m.node_tree.nodes["Script"])
             spherical_harmonics[-1].filepath = self.cfg.Engine.Material.osl
             spherical_harmonics[-1].update()
 
-        for ish, coeff in enumerate(sh_coeffs):
+        for ish, coeff in enumerate(self.sh_coeffs):
             for sc in spherical_harmonics:
                 sc.inputs[ish + 1].default_value = coeff
 
@@ -124,7 +129,7 @@ class PipeLine:
         #
         if not self.shape:
             self.shape=[]
-        self.smpl_data = np.load(os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir, self.cfg.Engine.Model.SMPL.smpl_data_filename))
+            self.smpl_data = np.load(os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir, self.cfg.Engine.Model.SMPL.smpl_data_filename))
         self.scene.reset_scene()
         for id in range(self.num_object):
             gender = self.genders[id]
@@ -150,6 +155,7 @@ class PipeLine:
         # input per frame info: pose and trans
         pose=frame_info['pose']  #[N,72]
         trans=frame_info['trans'] #[N,3]
+        cam_ob=frame_info['cam'] 
         
 
         for id in range(self.num_object):
@@ -158,9 +164,10 @@ class PipeLine:
             t=trans[id]
             # apply the translation, pose and shape to the character
             self.obj_list[id].apply_trans_pose_shape(
-                Vector(t), p, s, self.scene.scene, self.cam_ob, self.num_frames)
-
+                Vector(t), p, s, self.scene.scene, cam_ob, self.num_frames)
+            
             bpy.context.view_layer.update()
+        # cam_ob.animation_data_clear()
         self.num_frames +=1  #
 
         
@@ -171,8 +178,8 @@ class PipeLine:
         
         # LOOP TO RENDER: iterate over the keyframes and render
         
-        mkdir_safe(os.path.join(self.tmp_path,'rgb'))
-        rgb_path=os.path.join(self.tmp_path,'rgb')
+        mkdir_safe(os.path.join(self.output,'rgb'))
+        rgb_path=os.path.join(self.output,'rgb')
         # mkdir dir to output
         for seq_frame, i in enumerate(range(self.num_frames)):
             self.scene.scene.frame_set(seq_frame)

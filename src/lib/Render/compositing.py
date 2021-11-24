@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:50
-LastEditTime: 2021-11-09 18:36:35
+LastEditTime: 2021-11-19 15:08:01
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/src/lib/render/compositing.py
 '''
@@ -20,6 +20,8 @@ class RenderLayer:
 
     def set_output(self):
         # set the output file name
+        print('-'*20,self.cfg.Engine.tmp_path,'-'*20)
+        
         if self.cfg.Engine.output.segmentation:
             self.res['segm'] = join(self.cfg.Engine.tmp_path,"%05d_segm" %(self.cfg.Engine.idx))
         if self.cfg.Engine.output.depth:

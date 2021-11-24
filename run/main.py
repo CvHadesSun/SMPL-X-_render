@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 17:12:57
-LastEditTime: 2021-11-16 16:11:31
+LastEditTime: 2021-11-24 16:26:34
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/main.py
 '''
@@ -20,6 +20,7 @@ sys.path.insert(0,os.path.join(root_dir,'src'))
 sys.path.insert(0,os.path.join(root_dir,'run'))
 from data.vibe_utils import *
 from config import cfg
+from tools.cam import set_camera
 # update the  root_dir;
 cfg.Engine.root_dir = root_dir
 
@@ -27,12 +28,18 @@ from pipeline import PipeLine
 
 
 name='debug1'
-num_model=1
+num_model=2
+shape=[ 0.63876534, -2.0000112 ,  0.8837963 ,  1.6021069 ,  2.2627835 ,  0.43532476,
+ -0.10485663,  1.0975921  , 0.7018652 ,  1.5833994 ]
+
+
+
 render=PipeLine(cfg,name, num_model, 
-                genders=['female'],
+                genders=['female','female'],
                 bg_img='../input/test1.jpg',
-                textures=['/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/nongrey_female_0120.jpg']
-                )
+                textures=['/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/nongrey_female_0120.jpg'
+                ,'/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/grey_female_0884.jpg'],
+                shape=[shape])
 
 
 # '/home/hades/workspace/data/pg-engine/bg_imgs/backgrounds/train/S001C002P001R002A009_0.jpg',
@@ -64,15 +71,20 @@ def load_input(name,smpl_result_path):
 
     return pose_data,trans_data
 
-
+# set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=self.cfg.Engine.Renderer.camera.zrot_euler)
 pose,trans=load_input('S001C001P001R002A004','/home/hades/workspace/surreact/datageneration/data/ntu/vibe/train')
 
 id=0
 
-for i in range(2):
-    p=pose[id][i].reshape(1,-1)
-    t=trans[id][i].reshape(1,-1)
-    render.apply_input(pose=p,trans=t)
+
+# print(trans)
+
+for i in range(3):
+    p=pose[id][i:i+2].reshape(-1,72)
+    # t=trans[id][i:i+2].reshape(-1,3)
+    t=np.array([[-1,0,-0],[0,0,0]])
+    cam_ob=set_camera(cam_dist=8, cam_height=0, zrot_euler=0)
+    render.apply_input(pose=p,trans=t,cam=cam_ob)
 
 
 render.render()
