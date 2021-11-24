@@ -52,7 +52,7 @@ def sing_view_render(renderer,
 
     # transpose
     pose_data = pose_data.transpose(1,0,2)  # [num_frames,N,72]
-    trans_data = trans_data.transpose(1,0,3) # [num_frames,N,3]
+    trans_data = trans_data.transpose(1,0,2) # [num_frames,N,3]
 
     for frame in tqdm(range(0,num_frame,fskip)):
         p=pose_data[frame]
@@ -112,16 +112,6 @@ def multi_view_render(num_view,
     else:
         init_lights=lights
 
-    # need to input smpl model shape
-    init_shape=[]
-    if not shape:
-        smpl_data = np.load(os.path.join(cfg.Engine.Model.SMPL.smpl_dir,
-                            cfg.Engine.Model.SMPL.smpl_data_filename))
-        for id in range(num_models):
-            init_shape.append(pick_shape_whole(smpl_data))  
-    else:
-        init_shape=shape
-    
     # need to input genders.
     init_genders=[]
     if not genders:
@@ -129,11 +119,24 @@ def multi_view_render(num_view,
     else:
         init_genders=genders
 
+    # need to input smpl model shape
+    init_shape=[]
+    if not shape:
+        smpl_data = np.load(os.path.join(cfg.Engine.Model.SMPL.smpl_dir,
+                            cfg.Engine.Model.SMPL.smpl_data_filename))
+
+        for id in range(num_models):
+            init_shape.append(pick_shape_whole(smpl_data,init_genders[id]))  
+    else:
+        init_shape=shape
+    
+
+
     # need to input bg_img
     init_bg_img=None
     if not bg_img:
-        init_bg_img = pick_background(cfg.Engine.input.uv_textures.dir,
-                                          cfg.Engine.input.uv_textures.label)  # image dir/image_name.
+        init_bg_img = pick_background(cfg.Engine.input.bg_images.dir,
+                                          cfg.Engine.input.bg_images.txt)  # image dir/image_name.
     else:
         init_bg_img=bg_img
 
@@ -143,12 +146,11 @@ def multi_view_render(num_view,
 
         for id in range(num_models):
             init_textures.append(
-                     pick_texture(cfg.Engine.input.bg_images.clothing_option,
-                                       cfg.Engine.input.bg_images.dir,
-                                       cfg.Engine.input.bg_images.txt)
+                     pick_texture(cfg.Engine.input.uv_textures.clothing_option,
+                                       cfg.Engine.input.uv_textures.dir,
+                                       cfg.Engine.input.uv_textures.txt)
             )
 
-    
 
 
 
@@ -159,10 +161,10 @@ def multi_view_render(num_view,
         cam = cam_ob[view]
         renderer = PipeLine(cfg,name,view_name,num_models,
                     genders=init_genders,bg_img=init_bg_img,
-                    textures=textures,shape=init_shape,sh_coeffs=init_lights)
+                    textures=init_textures,shape=init_shape,sh_coeffs=init_lights)
 
 
-        sing_view_render(renderer,pose_data,trans_data,cfg,cam_ob=cam)
+        sing_view_render(renderer,pose_data,trans_data,cfg,cam_ob=cam,fskip=fskip)
 
     # <<<<<<<<<<< render over >>>>>>>>>>
 

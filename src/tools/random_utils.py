@@ -8,8 +8,8 @@ def pick_background(bg_path, texture_txt):
     bg_paths = []
     with open(bg_names) as f:
         for line in f:
-            bg_paths.append(os.path.join(bg_path, line))
-    bg_img_name = choice(bg_paths)[:-1]
+            bg_paths.append(os.path.join(bg_path, line.rstrip()))
+    bg_img_name = choice(bg_paths)
     # Original
     # bg_img_name = '/home/gvarol/datasets/ntu/backgrounds/train/S003C003P019R001A021_1.jpg'
     # Different background
@@ -19,9 +19,10 @@ def pick_background(bg_path, texture_txt):
 
 
 def pick_texture(clothing_option, texture_path, txt):
+
+    
     with open(os.path.join(texture_path,txt)) as f:
         txt_paths = f.read().splitlines()
-
     if clothing_option == "nongrey":
         txt_paths = [k for k in txt_paths if "nongrey" in k]
     elif clothing_option == "grey":
@@ -29,6 +30,8 @@ def pick_texture(clothing_option, texture_path, txt):
     else:
         raise ("NO SUPPORT:>> cloth option ")
     cloth_img_name = choice(txt_paths)
+    texture_path = os.path.dirname(texture_path)
+    cloth_img_name=os.path.join(texture_path,cloth_img_name)
     return cloth_img_name
 
 

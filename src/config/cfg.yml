@@ -23,7 +23,7 @@ Engine:
       cam_dist: 8.0
       cam_height: 1.0
       zrot_euler: 0.0 # 0 45 90 135 180 225 270 315
-      cam_dist_range: [5,10]
+      cam_dist_range: [7,8]
       cam_height_range: [-5,-5]
 
 #   #
@@ -42,11 +42,12 @@ Engine:
       dir: /home/hades/workspace/data/pg-engine/bg_imgs/backgrounds
       txt: test_img.txt
       data: test
-      clothing_option: nongrey
+      
     uv_textures:
+      clothing_option: nongrey
       dir: /home/hades/workspace/surreact/datageneration/smpl_data/textures
       data: female
-      label: female_all.txt
+      txt: female_all.txt
 
   output:
     format: video # image

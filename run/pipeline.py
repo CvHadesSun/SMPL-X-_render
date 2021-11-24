@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-24 18:01:34
+LastEditTime: 2021-11-24 19:15:12
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -68,9 +68,11 @@ class PipeLine:
             self.genders = gender_generator(num_model)
         self.num_object = num_model
         self.textures = textures
+
         self.bg_img = bg_img
         self.shape = shape
 
+        # if len(sh_coeffs.shape)>0:
         if not sh_coeffs:
             self.sh_coeffs=random_light()
         else:
@@ -85,8 +87,8 @@ class PipeLine:
     def _set_bg(self):
         if not self.bg_img:
             # random select from bg map
-            self.bg_img = pick_background(self.cfg.Engine.input.uv_textures.dir,
-                                          self.cfg.Engine.input.uv_textures.label)  # image dir/image_name.
+            self.bg_img = pick_background(self.cfg.Engine.input.bg_images.dir,
+                                          self.cfg.Engine.input.bg_images.txt)  # image dir/image_name.
 
     def init_scene(self):
         self.scene = Scene(self.cfg)
@@ -136,9 +138,9 @@ class PipeLine:
             try:
                 texture = self.textures[id]
             except:
-                texture = pick_texture(self.cfg.Engine.input.bg_images.clothing_option,
-                                       self.cfg.Engine.input.bg_images.dir,
-                                       self.cfg.Engine.input.bg_images.txt)
+                texture = pick_texture(self.cfg.Engine.input.uv_textures.clothing_option,
+                                       self.cfg.Engine.input.uv_textures.dir,
+                                       self.cfg.Engine.input.uv_textures.txt)
                 self.textures.append(texture)
             material = Material(self.cfg, id,texture)
             smpl = SMPL_Body(self.cfg, material.material, gender=self.genders[id], person_no=id)
