@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-24 19:15:12
+LastEditTime: 2021-11-25 17:28:57
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -73,7 +73,7 @@ class PipeLine:
         self.shape = shape
 
         # if len(sh_coeffs.shape)>0:
-        if not sh_coeffs:
+        if isinstance(sh_coeffs,type(None)):
             self.sh_coeffs=random_light()
         else:
             self.sh_coeffs=sh_coeffs

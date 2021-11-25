@@ -11,6 +11,7 @@ from tools.cam import set_camera
 from tools.random_utils import pick_cam
 from pipeline import PipeLine
 from tools.light import random_light
+import bpy
 
 from tools.random_utils import (pick_shape_whole,
 gender_generator,pick_background,pick_texture)
@@ -19,7 +20,7 @@ def sing_view_render(renderer,
                     pose_data,
                     trans_data,
                     cfg,
-                    cam_ob=None,
+                    cam_obs=None,
                     fskip=1):
 
     '''
@@ -40,15 +41,15 @@ def sing_view_render(renderer,
 
     num_frame=pose_data.shape[1]
 
-    if not cam_ob:
+    if not  isinstance(cam_obs,type(None)):
         # random generate camera parameters
         # random cam dist
         # random cam height
         # random zrot
-        cam_height,cam_dist,cam_zrot = pick_cam(cfg.Engine.Renderer.camera.cam_height_range,
-                                                cfg.Engine.Renderer.camera.cam_dist_range)
-
-        cam_ob = set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=cam_zrot)
+        # cam_height,cam_dist,cam_zrot = pick_cam(cfg.Engine.Renderer.camera.cam_height_range,
+        #                                         cfg.Engine.Renderer.camera.cam_dist_range)
+        cam_height,cam_dist,cam_zrot = cam_obs
+        cam_obs = set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=cam_zrot)
 
     # transpose
     pose_data = pose_data.transpose(1,0,2)  # [num_frames,N,72]
@@ -57,7 +58,7 @@ def sing_view_render(renderer,
     for frame in tqdm(range(0,num_frame,fskip)):
         p=pose_data[frame]
         t=trans_data[frame]
-        renderer.apply_input(pose=p,trans=t,cam=cam_ob)
+        renderer.apply_input(pose=p,trans=t,cam=cam_obs)
     renderer.render()
 
 
@@ -69,7 +70,7 @@ def multi_view_render(num_view,
                     pose_data,
                     trans_data,
                     cfg,
-                    cam_ob=None,
+                    cam_obs=None,
                     genders=None,
                     bg_img=None,
                     textures=None,
@@ -91,19 +92,19 @@ def multi_view_render(num_view,
 
     num_frame=pose_data.shape[1]
 
-
-    if not cam_ob:
+    
+    if  isinstance(cam_obs,type(None)):
         # random generate camera parameters
         # random cam dist
         # random cam height
         # random zrot
-        cam_ob=[]
+        cam_obs=[]
         for i in range(num_view):
             cam_height,cam_dist,cam_zrot = pick_cam(cfg.Engine.Renderer.camera.cam_height_range,
                                                     cfg.Engine.Renderer.camera.cam_dist_range)
 
-            ob = set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=cam_zrot)
-            cam_ob.append(ob)
+            # ob = set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=cam_zrot)
+            cam_obs.append([cam_height,cam_dist,cam_zrot])
 
     # need input lights parameters
     init_lights=[]
@@ -158,14 +159,14 @@ def multi_view_render(num_view,
 
     for view in range(num_view):
         view_name = 'camera_{:04d}'.format(view)
-        cam = cam_ob[view]
+        cam = cam_obs[view]
         renderer = PipeLine(cfg,name,view_name,num_models,
                     genders=init_genders,bg_img=init_bg_img,
                     textures=init_textures,shape=init_shape,sh_coeffs=init_lights)
 
 
-        sing_view_render(renderer,pose_data,trans_data,cfg,cam_ob=cam,fskip=fskip)
-
+        sing_view_render(renderer,pose_data,trans_data,cfg,cam_obs=cam,fskip=fskip)
+        bpy.ops.object.select_all(action='DESELECT')
     # <<<<<<<<<<< render over >>>>>>>>>>
 
     

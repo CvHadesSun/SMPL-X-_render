@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 17:12:57
-LastEditTime: 2021-11-24 19:21:15
+LastEditTime: 2021-11-25 17:27:19
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/main.py
 '''
@@ -33,19 +33,19 @@ if not os.path.exists(cfg.Engine.output_dir):
     cfg.Engine.output_dir =os.path.join(cfg.Engine.root_dir,cfg.Engine.output_dir)
     mkdir_safe(cfg.Engine.output_dir)
 
-name='debug1'
-num_model=1
-shape=[ 0.63876534, -2.0000112 ,  0.8837963 ,  1.6021069 ,  2.2627835 ,  0.43532476,
- -0.10485663,  1.0975921  , 0.7018652 ,  1.5833994 ]
+# name='debug1'
+# num_model=1
+# shape=[ 0.63876534, -2.0000112 ,  0.8837963 ,  1.6021069 ,  2.2627835 ,  0.43532476,
+#  -0.10485663,  1.0975921  , 0.7018652 ,  1.5833994 ]
 
 
 
-render=PipeLine(cfg,'debug',name, num_model, 
-                genders=['female','female'],
-                bg_img='../input/test1.jpg',
-                textures=['/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/nongrey_female_0120.jpg'
-                ,'/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/grey_female_0884.jpg'],
-                shape=[shape])
+# render=PipeLine(cfg,'debug',name, num_model, 
+#                 genders=['female','female'],
+#                 bg_img='../input/test1.jpg',
+#                 textures=['/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/nongrey_female_0120.jpg'
+#                 ,'/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/grey_female_0884.jpg'],
+#                 shape=[shape])
 
 
 # # '/home/hades/workspace/data/pg-engine/bg_imgs/backgrounds/train/S001C002P001R002A009_0.jpg',
@@ -96,7 +96,7 @@ trans=np.array(trans)
 
 
 # render.render()
-sing_view_render(render,pose,trans,cfg,fskip=20)
+# sing_view_render(render,pose,trans,cfg,fskip=20)
 
 
 
@@ -104,4 +104,4 @@ sing_view_render(render,pose,trans,cfg,fskip=20)
 
 
 
-# multi_view_render(1,1,'test',pose,trans,cfg,fskip=20)
+multi_view_render(2,1,'test',pose,trans,cfg,fskip=20)

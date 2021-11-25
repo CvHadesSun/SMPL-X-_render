@@ -17,8 +17,8 @@ Engine:
 #   #
   Renderer:
     engine: CYCLES
-    resx: 1080
-    resy: 1920
+    resx: 480
+    resy: 640
     camera:
       cam_dist: 8.0
       cam_height: 1.0
