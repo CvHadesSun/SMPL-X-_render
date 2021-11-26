@@ -1,7 +1,7 @@
 <!--
  * @Author: cvhades
  * @Date: 2021-11-09 16:15:16
- * @LastEditTime: 2021-11-24 15:33:28
+ * @LastEditTime: 2021-11-26 15:54:25
  * @LastEditors: Please set LastEditors
  * @FilePath: /PG-engine/README.md
 -->
@@ -9,7 +9,25 @@
 # PG-engine (pose generator engine)
 The engine to generate human pose dataset based on blender.(blender2.92).  Committed to  more reality human render engine. Welcom join this project and develop it.
 
-![SMPL_example](assets/Image0000.png)
+
+# demo
+## SINGLE-VIEW
+![SMPL_example](assets/single_view.png)
+
+
+## MULTI-VIEW
+
+
+|angle| image|
+|:----:|:----:|
+|$0^o$ |![0](assets/multi-view/000.png)|
+|$45^o$|![45](assets/multi-view/045.png)|
+|$90^o$|![90](assets/multi-view/090.png)|
+|$135^o$|![135](assets/multi-view/135.png)|
+|$180^o$|![280](assets/multi-view/180.png)|
+|$225^o$|![225](assets/multi-view/225.png)|
+|$270^o$|![270](assets/multi-view/270.png)|
+|$315^o$|![315](assets/multi-view/315.png)|
 ## Framework
 
 ### 1.ENGINE

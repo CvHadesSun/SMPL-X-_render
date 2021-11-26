@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 17:12:57
-LastEditTime: 2021-11-25 17:27:19
+LastEditTime: 2021-11-26 15:28:05
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/main.py
 '''
@@ -27,7 +27,7 @@ cfg.Engine.root_dir = root_dir
 from tools.cam import set_camera
 from pipeline import PipeLine
 
-from toolkits import multi_view_render,sing_view_render
+from toolkits import multi_view_render,multi_view_info_generator
 
 if not os.path.exists(cfg.Engine.output_dir):
     cfg.Engine.output_dir =os.path.join(cfg.Engine.root_dir,cfg.Engine.output_dir)
@@ -80,7 +80,7 @@ def load_input(name,smpl_result_path):
 # # set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=self.cfg.Engine.Renderer.camera.zrot_euler)
 pose,trans=load_input('S001C001P001R002A004','/home/hades/workspace/surreact/datageneration/data/ntu/vibe/train')
 
-id=0
+# id=0
 
 pose=np.array(pose)
 trans=np.array(trans)
@@ -104,4 +104,6 @@ trans=np.array(trans)
 
 
 
-multi_view_render(2,1,'test',pose,trans,cfg,fskip=20)
+# multi_view_render(2,1,'test',pose,trans,cfg,fskip=20)
+
+multi_view_info_generator(1,cfg,pose,trans)

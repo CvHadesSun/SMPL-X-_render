@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-25 17:28:57
+LastEditTime: 2021-11-26 12:19:23
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -129,7 +129,8 @@ class PipeLine:
 
     def _init_model(self):
         #
-        if not self.shape:
+        # if not self.shape:
+        if not isinstance(self.shape,type(None)):
             self.shape=[]
             self.smpl_data = np.load(os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir, self.cfg.Engine.Model.SMPL.smpl_data_filename))
         self.scene.reset_scene()

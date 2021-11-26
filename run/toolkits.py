@@ -1,6 +1,7 @@
 
 
 
+from posixpath import curdir
 from types import new_class
 from numpy import not_equal
 from tqdm import tqdm 
@@ -8,15 +9,17 @@ import os
 import numpy as np 
 
 from tools.cam import set_camera
+from tools.file_op import mkdir_safe
 from tools.random_utils import pick_cam
 from pipeline import PipeLine
 from tools.light import random_light
 import bpy
+import scipy.io as sio
 
 from tools.random_utils import (pick_shape_whole,
 gender_generator,pick_background,pick_texture)
 
-def sing_view_render(renderer,
+def single_view_render(renderer,
                     pose_data,
                     trans_data,
                     cfg,
@@ -165,7 +168,7 @@ def multi_view_render(num_view,
                     textures=init_textures,shape=init_shape,sh_coeffs=init_lights)
 
 
-        sing_view_render(renderer,pose_data,trans_data,cfg,cam_obs=cam,fskip=fskip)
+        single_view_render(renderer,pose_data,trans_data,cfg,cam_obs=cam,fskip=fskip)
         bpy.ops.object.select_all(action='DESELECT')
     # <<<<<<<<<<< render over >>>>>>>>>>
 
@@ -173,4 +176,64 @@ def multi_view_render(num_view,
 
 
 
+    
+
+def multi_view_info_generator(num_model,cfg,pose_data,trans_data):
+    # random generate
+    # mkdir tmp dir to store tmp files
+
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    cur_dir = os.path.join(cur_dir,'multi_tmp')
+    mkdir_safe(cur_dir)
+    output_file=os.path.join(cur_dir,'data.mat')
+
+    # cam
+    # cam_obs=[]
+    # for i in range(num_view):
+    #     cam_height,cam_dist,cam_zrot = pick_cam(cfg.Engine.Renderer.camera.cam_height_range,
+    #                                             cfg.Engine.Renderer.camera.cam_dist_range)
+    #     cam_obs.append([cam_height,cam_dist,cam_zrot])
+
+    # light
+    init_lights=random_light()
+
+    # genders 
+    init_genders=gender_generator(num_model)
+
+    #shape
+    init_shape=[]
+    smpl_data = np.load(os.path.join(cfg.Engine.Model.SMPL.smpl_dir,
+                        cfg.Engine.Model.SMPL.smpl_data_filename))
+
+    for id in range(num_model):
+        init_shape.append(pick_shape_whole(smpl_data,init_genders[id]))  
+
+    # bg imgs 
+    init_bg_img = pick_background(cfg.Engine.input.bg_images.dir,
+                                          cfg.Engine.input.bg_images.txt)  # image dir/image_name.
+    # textures
+    init_textures=[]
+    for id in range(num_model):
+        init_textures.append(
+                    pick_texture(cfg.Engine.input.uv_textures.clothing_option,
+                                    cfg.Engine.input.uv_textures.dir,
+                                    cfg.Engine.input.uv_textures.txt)
+        )
+    # save into into tmp dir
+
+    dict_info = {}
+    dict_info['light'] = init_lights
+    dict_info['num_model'] = num_model
+    dict_info['genders'] = init_genders
+    dict_info['shape'] = init_shape
+    dict_info['pose'] = pose_data
+    dict_info['trans'] = trans_data
+    dict_info['bg_img']=init_bg_img
+    dict_info['textures']=init_textures
+
+    sio.savemat(output_file, dict_info, do_compression=True)
+
+
+
+     
     
