@@ -15,6 +15,9 @@ from pipeline import PipeLine
 from tools.light import random_light
 import bpy
 import scipy.io as sio
+import joblib
+
+from tools.geometryutils import rotmat2rotvec
 
 from tools.random_utils import (pick_shape_whole,
 gender_generator,pick_background,pick_texture)
@@ -178,15 +181,16 @@ def multi_view_render(num_view,
 
     
 
-def multi_view_info_generator(num_model,cfg,pose_data,trans_data):
+def multi_view_info_generator(num_model,cfg,pose_data,trans_data,info_output):
     # random generate
     # mkdir tmp dir to store tmp files
 
-    cur_dir = os.path.dirname(os.path.abspath(__file__))
-    cur_dir = os.path.join(cur_dir,'multi_tmp')
-    mkdir_safe(cur_dir)
-    output_file=os.path.join(cur_dir,'data.mat')
-
+    # cur_dir = os.path.dirname(os.path.abspath(__file__))
+    # cur_dir = os.path.join(cur_dir,'multi_tmp')
+    # mkdir_safe(cur_dir)
+    # output_file=os.path.join(cur_dir,'data.mat')
+    
+    output_file=os.path.join(info_output,'data.mat')
     # cam
     # cam_obs=[]
     # for i in range(num_view):
@@ -220,20 +224,45 @@ def multi_view_info_generator(num_model,cfg,pose_data,trans_data):
                                     cfg.Engine.input.uv_textures.txt)
         )
     # save into into tmp dir
-
     dict_info = {}
-    dict_info['light'] = init_lights
+    # dict_info['light'] = init_lights
     dict_info['num_model'] = num_model
-    dict_info['genders'] = init_genders
-    dict_info['shape'] = init_shape
+    # dict_info['genders'] = init_genders
+    # dict_info['shape'] = init_shape
     dict_info['pose'] = pose_data
     dict_info['trans'] = trans_data
-    dict_info['bg_img']=init_bg_img
-    dict_info['textures']=init_textures
+    # dict_info['bg_img']=init_bg_img
+    # dict_info['textures']=init_textures
+
+    
 
     sio.savemat(output_file, dict_info, do_compression=True)
 
 
 
      
-    
+
+
+
+def load_pose_from_pare(pkl_file):
+    data=joblib.load(pkl_file) 
+
+    pose=data[1]['pose']
+    euler_pose=[]
+    for frame in range(pose.shape[0]):
+        per_pose=[]
+        for j in range(pose.shape[1]):
+            R=pose[frame][j]
+            eul=rotmat2rotvec(R).reshape(1,-1)
+            per_pose.append(eul)
+            
+        mat_euler_pose=np.concatenate(per_pose,axis=0)
+        euler_pose.append(mat_euler_pose.reshape(-1,24,3))
+
+    pose=np.concatenate(euler_pose,axis=0)
+
+
+    pose=pose.reshape(1,-1,72)
+    trans=np.zeros([1,pose.shape[1],3])
+
+    return pose,trans

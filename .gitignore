@@ -28,6 +28,7 @@ share/python-wheels/
 MANIFEST
 output/
 input/
+test_knn/
 
 run/multi_tmp/
 # PyInstaller

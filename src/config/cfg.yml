@@ -3,7 +3,7 @@
 Engine: 
   root_dir: root_path
   idx: 0
-  output_dir: output
+  output_dir: test_knn
   #
 #   Module:
 #     scene:

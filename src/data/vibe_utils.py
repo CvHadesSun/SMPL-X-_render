@@ -54,6 +54,7 @@ def load_smpl_body_data(
     num_frames = vibe_output["pose"].shape[0]
     # Poses in vibe are in axis-angle format as (num_frames, 72)
     vibe_output["poses"] = vibe_output["pose"]
+    print(vibe_output["pose"].shape)
     # Add trans key, init with zeros
     vibe_output["trans"] = np.zeros((num_frames, 3))
     for t in range(num_frames):

@@ -1,4 +1,5 @@
 
+
 #env
 BLENDER_PATH=/home/hades/workspace/surreact/blender-2.92.0-linux64
 CODE_PATH=/scratch/shared/beegfs/gul/surreact_project/surreact
@@ -7,7 +8,8 @@ CODE_PATH=/scratch/shared/beegfs/gul/surreact_project/surreact
 # cam
 cam_height=1.0
 cam_dist=8.0
-zrot="0 45 90 135 180 225 270 315"
+# zrot="0 45 90 135 180 225 270 315"
+zrot="45"
 name=debug
 skip=20
 # JOB_PARAMS=${1:-'

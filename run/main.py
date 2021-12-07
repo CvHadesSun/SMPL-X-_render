@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 17:12:57
-LastEditTime: 2021-11-26 15:28:05
+LastEditTime: 2021-12-07 15:33:44
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/main.py
 '''
@@ -12,7 +12,7 @@ FilePath: /PG-engine/run/main.py
 import os
 import sys
 
-import cv2
+# import cv2
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(cur_dir,'..')
@@ -27,20 +27,20 @@ cfg.Engine.root_dir = root_dir
 from tools.cam import set_camera
 from pipeline import PipeLine
 
-from toolkits import multi_view_render,multi_view_info_generator
+from toolkits import multi_view_render,multi_view_info_generator,load_pose_from_pare
 
 if not os.path.exists(cfg.Engine.output_dir):
     cfg.Engine.output_dir =os.path.join(cfg.Engine.root_dir,cfg.Engine.output_dir)
     mkdir_safe(cfg.Engine.output_dir)
 
-# name='debug1'
-# num_model=1
+name='debug1'
+num_model=1
 # shape=[ 0.63876534, -2.0000112 ,  0.8837963 ,  1.6021069 ,  2.2627835 ,  0.43532476,
 #  -0.10485663,  1.0975921  , 0.7018652 ,  1.5833994 ]
 
 
 
-# render=PipeLine(cfg,'debug',name, num_model, 
+# render=PipeLine(cfg,'debug',name, num_model,
 #                 genders=['female','female'],
 #                 bg_img='../input/test1.jpg',
 #                 textures=['/home/hades/workspace/surreact/datageneration/smpl_data/textures/female/nongrey_female_0120.jpg'
@@ -78,12 +78,16 @@ def load_input(name,smpl_result_path):
     return pose_data,trans_data
 
 # # set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=self.cfg.Engine.Renderer.camera.zrot_euler)
-pose,trans=load_input('S001C001P001R002A004','/home/hades/workspace/surreact/datageneration/data/ntu/vibe/train')
+# pose,trans=load_input('S001C001P001R002A004','/home/hades/workspace/surreact/datageneration/data/ntu/vibe/train')
 
 # id=0
 
-pose=np.array(pose)
-trans=np.array(trans)
+# load_pose_from_pare('../label_info/pare_output.pkl')
+pose,trans=load_pose_from_pare('../label_info/pare_output.pkl')
+# print(pose.shape,trans.shape)
+
+# pose=np.array(pose)
+# trans=np.array(trans)
 
 # # print(trans)
 
@@ -97,13 +101,11 @@ trans=np.array(trans)
 
 # render.render()
 # sing_view_render(render,pose,trans,cfg,fskip=20)
-
-
-
-
-
-
-
 # multi_view_render(2,1,'test',pose,trans,cfg,fskip=20)
 
-multi_view_info_generator(1,cfg,pose,trans)
+
+multi_view_info_generator(1,cfg,pose,trans,os.path.join(root_dir,"label_info"))
+
+
+
+

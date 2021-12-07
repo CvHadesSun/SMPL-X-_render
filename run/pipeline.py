@@ -1,13 +1,15 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-11-26 12:19:23
+LastEditTime: 2021-12-07 14:59:37
 LastEditors: Please set LastEditors
 FilePath: /PG-engine/run/pipeline.py
 '''
 
 import os
 import sys
+
+from numpy.lib.arraysetops import isin
 import bpy
 import numpy as np
 import shutil
@@ -67,7 +69,10 @@ class PipeLine:
         else:
             self.genders = gender_generator(num_model)
         self.num_object = num_model
-        self.textures = textures
+        if isinstance(textures,type(None)):
+            self.textures=[]
+        else:
+            self.textures = textures
 
         self.bg_img = bg_img
         self.shape = shape
@@ -130,7 +135,7 @@ class PipeLine:
     def _init_model(self):
         #
         # if not self.shape:
-        if not isinstance(self.shape,type(None)):
+        if isinstance(self.shape,type(None)):
             self.shape=[]
             self.smpl_data = np.load(os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir, self.cfg.Engine.Model.SMPL.smpl_data_filename))
         self.scene.reset_scene()
