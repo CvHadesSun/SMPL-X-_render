@@ -33,7 +33,7 @@ if __name__=="__main__":
 
     output_video=os.path.join(os.path.join(data_dir,'videos'))
 
-    for i in range(2):
+    for i in range(50):
         dir=os.path.join(data_dir,str(i),cam_name)
         video_name='{:02d}'.format(i)+'.mp4'
         fg_mp4_path=os.path.join(output_video,video_name)
