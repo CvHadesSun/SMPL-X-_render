@@ -29,6 +29,10 @@ MANIFEST
 output/
 input/
 test_knn/
+knn/
+test_repnet_1/
+test_repnet_2/
+label_info/
 
 run/multi_tmp/
 # PyInstaller
