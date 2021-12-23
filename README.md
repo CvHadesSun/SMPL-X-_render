@@ -17,17 +17,8 @@ The engine to generate human pose dataset based on blender.(blender2.92).  Commi
 
 ## MULTI-VIEW
 
+<img src="assets/multi-view/multi-view.gif"  />
 
-|angle| image|
-|:----:|:----:|
-|$0^o$ |![0](assets/multi-view/000.png)|
-|$45^o$|![45](assets/multi-view/045.png)|
-|$90^o$|![90](assets/multi-view/090.png)|
-|$135^o$|![135](assets/multi-view/135.png)|
-|$180^o$|![280](assets/multi-view/180.png)|
-|$225^o$|![225](assets/multi-view/225.png)|
-|$270^o$|![270](assets/multi-view/270.png)|
-|$315^o$|![315](assets/multi-view/315.png)|
 ## Framework
 
 ### 1.ENGINE
