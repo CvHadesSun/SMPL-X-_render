@@ -1,8 +1,8 @@
 '''
 Author: cvhades
 Date: 2021-11-10 15:10:24
-LastEditTime: 2021-11-24 16:20:39
-LastEditors: Please set LastEditors
+LastEditTime: 2021-12-30 17:46:32
+LastEditors: cvhadessun
 FilePath: /PG-engine/src/tools/cam.py
 '''
 
@@ -21,7 +21,7 @@ def set_camera(cam_dist=7, cam_height=1, zrot_euler=0):
     rot_z = math.radians(zrot_euler)
     rot_x = math.atan((cam_height - 1) / cam_dist)
     # Rotate -90 degrees around x axis to have the person face cam
-    cam_rot = Matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0))).to_4x4()
+    cam_rot = Matrix(((1, 0, 0), (0, 0, 1), (0, 1, 0))).to_4x4()
     # Rotation by zrot_euler around z-axis
     cam_rot_z = Euler((0, rot_z, 0), "XYZ").to_matrix().to_4x4()
     cam_rot_x = Euler((rot_x, 0, 0), "XYZ").to_matrix().to_4x4()

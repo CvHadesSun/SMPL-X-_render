@@ -1,8 +1,8 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-12-07 14:59:37
-LastEditors: Please set LastEditors
+LastEditTime: 2021-12-30 17:39:14
+LastEditors: cvhadessun
 FilePath: /PG-engine/run/pipeline.py
 '''
 
@@ -10,6 +10,8 @@ import os
 import sys
 
 from numpy.lib.arraysetops import isin
+from numpy.lib.index_tricks import ogrid
+from numpy.random.mtrand import f
 import bpy
 import numpy as np
 import shutil
@@ -24,6 +26,7 @@ from tools.random_utils import pick_background, pick_texture, gender_generator, 
 from lib.Scene.scene import Scene
 from lib.Material.shading import Material
 from lib.Model.SMPL import SMPL_Body
+from lib.Model.SMPL_X import SMPLX_Body
 from lib.Render.compositing import RenderLayer
 from tools.light import random_light
 from tools.cam import set_camera
@@ -149,7 +152,13 @@ class PipeLine:
                                        self.cfg.Engine.input.uv_textures.txt)
                 self.textures.append(texture)
             material = Material(self.cfg, id,texture)
-            smpl = SMPL_Body(self.cfg, material.material, gender=self.genders[id], person_no=id)
+            if self.cfg.Engine.Model.selected == "SMPL":
+                smpl = SMPL_Body(self.cfg, material.material, gender=self.genders[id], person_no=id)
+            elif self.cfg.Engine.Model.selected == "SMPLX":
+                smpl = SMPLX_Body(self.cfg, material.material, gender=self.genders[id], person_no=id)
+            else:
+                raise("model type no supported, please config the cfg.Engine.Model.selected.")
+
             self.obj_list.append(smpl)
 
             try:
@@ -164,15 +173,29 @@ class PipeLine:
         pose=frame_info['pose']  #[N,72]
         trans=frame_info['trans'] #[N,3]
         cam_ob=frame_info['cam'] 
+        if 'shape' in frame_info.keys():
+            shape=frame_info['shape'] 
+        else:
+            shape=self.shape
+        if 'orient' in frame_info.keys():
+            orient=frame_info['orient']
+        else:
+            orient=np.zeros([self.num_object,3])
+        if 'expression' in frame_info.keys():
+            expression=frame_info['expression']
+        else:
+            expression=np.zeros([self.num_object,10])
         
 
         for id in range(self.num_object):
-            s=self.shape[id]
+            s=shape[id]
             p=pose[id]
             t=trans[id]
+            r=orient[id]
+            e=expression[id]
             # apply the translation, pose and shape to the character
             self.obj_list[id].apply_trans_pose_shape(
-                Vector(t), p, s, self.scene.scene, cam_ob, self.num_frames)
+                r,Vector(t), p, s,e, self.scene.scene, cam_ob,frame=self.num_frames)
             
             bpy.context.view_layer.update()
         # cam_ob.animation_data_clear()

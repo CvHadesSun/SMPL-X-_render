@@ -1,9 +1,9 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:33
-LastEditTime: 2021-11-16 14:39:54
-LastEditors: Please set LastEditors
-FilePath: /PG-engine/src/lib/model/SMPL.py
+LastEditTime: 2021-12-30 17:24:48
+LastEditors: cvhadessun
+FilePath: /PG-engine/src/lib/Model/SMPL.py
 '''
 
 import bpy
@@ -31,7 +31,7 @@ class SMPL_Body:
             global_scale=100,
         )
         J_regressors = pkl.load(
-            open(os.path.join(smpl_data_folder, "joint_regressors.pkl"), "rb")
+            open(os.path.join(smpl_data_folder, cfg.Engine.Model.J_regressor), "rb")
         )
         # 24 x 6890 regressor from vertices to joints
         self.joint_regressor = J_regressors["J_regressor_{}".format(gender)]
@@ -158,7 +158,7 @@ class SMPL_Body:
             bpy.ops.object.mode_set(mode="OBJECT")
         return materials
 
-    def apply_trans_pose_shape(self, trans, pose, shape, scene, cam_ob, frame=None):
+    def apply_trans_pose_shape(self, orient,trans, pose, shape,expression, scene, cam_ob, frame=None):
         """
         Apply trans pose and shape to character
         """

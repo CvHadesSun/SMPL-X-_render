@@ -1,11 +1,12 @@
 '''
 Date: 2021-12-23 15:59:44
 LastEditors: cvhadessun
-LastEditTime: 2021-12-23 16:38:01
+LastEditTime: 2021-12-30 17:36:59
 FilePath: /PG-engine/src/lib/Model/SMPL_X.py
 '''
 
 
+from yaml.events import NodeEvent
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Matrix, Quaternion
@@ -13,25 +14,55 @@ import numpy as np
 import pickle as pkl
 import os
 
-from tools.geometryutils import rodrigues2bshapes
+from tools.geometryutils import rodrigues2bshapes,set_pose_from_rodrigues
 
+
+hand_pose={}
+hand_pose['flat']= np.zeros([90]).reshape(2,-1)
+hand_pose['relaxed'] = np.array(
+                        [[ 0.11167871,  0.04289218, -0.41644183,  0.10881133, -0.06598568,
+                        -0.75622   , -0.09639297, -0.09091566, -0.18845929, -0.11809504,
+                        0.05094385, -0.5295845 , -0.14369841,  0.0552417 , -0.7048571 ,
+                        -0.01918292, -0.09233685, -0.3379135 , -0.45703298, -0.19628395,
+                        -0.6254575 , -0.21465237, -0.06599829, -0.50689423, -0.36972436,
+                        -0.06034463, -0.07949023, -0.1418697 , -0.08585263, -0.63552827,
+                        -0.3033416 , -0.05788098, -0.6313892 , -0.17612089, -0.13209307,
+                        -0.37335458,  0.8509643 ,  0.27692273, -0.09154807, -0.49983943,
+                        0.02655647,  0.05288088,  0.5355592 ,  0.04596104, -0.27735803],
+                        [0.11167871, -0.04289218,  0.41644183,  0.10881133,  0.06598568,
+                        0.75622   , -0.09639297,  0.09091566,  0.18845929, -0.11809504,
+                        -0.05094385,  0.5295845 , -0.14369841, -0.0552417 ,  0.7048571 ,
+                        -0.01918292,  0.09233685,  0.3379135 , -0.45703298,  0.19628395,
+                        0.6254575 , -0.21465237,  0.06599829,  0.50689423, -0.36972436,
+                        0.06034463,  0.07949023, -0.1418697 ,  0.08585263,  0.63552827,
+                        -0.3033416 ,  0.05788098,  0.6313892 , -0.17612089,  0.13209307,
+                        0.37335458,  0.8509643 , -0.27692273,  0.09154807, -0.49983943,
+                        -0.02655647, -0.05288088,  0.5355592 , -0.04596104,  0.27735803]])
 
 class SMPLX_Body:
+    '''
+    smplx-dir:
+        |__models
+        |__data
+            |__joint_regressors.pkl
+            |__segm_per_v_overlap.pkl
+    '''
     def __init__(self,cfg,material,gender='female',person_no=0) -> None:
         # load fbx model
-        smpl_data_folder=cfg.Engine.Model.SMPL.smpl_dir
+        smpl_data_folder=cfg.Engine.Model.SMPLX.smplx_dir
         self.cfg=cfg
         bpy.ops.import_scene.fbx(
             filepath=os.path.join(
                 smpl_data_folder,
-                "basicModel_{}_lbs_10_207_0_v1.0.2.fbx".format(gender[0]),
+                'models',
+                "{}_smplx.fbx".format(gender),
             ),
             axis_forward="Y",
             axis_up="Z",
-            global_scale=100,
+            global_scale=1,
         )
         J_regressors = pkl.load(
-            open(os.path.join(smpl_data_folder, "joint_regressors.pkl"), "rb"))
+            open(os.path.join(smpl_data_folder, "data/joint_regressors.pkl"), "rb"))
         self.joint_regressor = J_regressors["J_regressor_{}".format(gender)]
         
         # 
@@ -123,7 +154,7 @@ class SMPLX_Body:
         part2num = {part: (ipart + 1) for ipart, part in enumerate(sorted_parts)}
         materials = {}
         vgroups = {}
-        segm_path=os.path.join(self.cfg.Engine.Model.SMPL.smpl_dir,self.cfg.Engine.Model.SMPL.segm_overlap)
+        segm_path=os.path.join(self.cfg.Engine.Model.SMPLX.smplx_dir,'data',self.cfg.Engine.Model.SMPLX.segm_overlap)
         with open(segm_path, "rb") as f:
             vsegm = pkl.load(f)
         bpy.ops.object.material_slot_remove()
@@ -145,17 +176,22 @@ class SMPLX_Body:
             bpy.ops.object.mode_set(mode="OBJECT")
         return materials
 
-    def apply_trans_pose_shape(self,trans,pose,shape,scene,cam_ob,frame=None):
+    def apply_trans_pose_shape(self,orient,trans,pose,shape,expression,scene,cam_ob,frame=None):
         """
         Apply trans pose and shape to character
         """
-        # transform pose into rotation matrices (for pose) and pose blendshapes
+
+        # set global orientation
+        set_pose_from_rodrigues(self.arm_ob,'pelvis',orient)
+
+        # transform pose into rotation matrices (for pose) and pose blendshapes            
         mrots, bsh = rodrigues2bshapes(pose)
 
         # set the location of the first bone to the translation parameter
-        self.arm_ob.pose.bones['pelvis'].location = trans
-        self.arm_ob.pose.bones['root'].location = trans
-        self.arm_ob.pose.bones['root'].keyframe_insert('location', frame=frame)
+        # self.arm_ob.pose.bones['pelvis'].location = trans
+        # self.arm_ob.pose.bones['root'].location = trans
+        if frame is not None:
+            self.arm_ob.pose.bones['root'].keyframe_insert('location', frame=frame)
 
         # set the pose of each bone to the quaternion specified by pose
         for ibone, mrot in enumerate(mrots):
@@ -178,6 +214,18 @@ class SMPLX_Body:
                 self.ob.data.shape_keys.key_blocks['Shape%03d' % ibshape].keyframe_insert(
                     'value', index=-1, frame=frame)
 
+        # apply face shape blendshapes
+        if isinstance(expression,type(None)):
+            expression=[0.0]*10
+        for ibshape, shape_elem in enumerate(expression):
+            self.ob.data.shape_keys.key_blocks['Exp%03d' % ibshape].value = shape_elem
+            if frame is not None:
+                self.ob.data.shape_keys.key_blocks['Exp%03d' % ibshape].keyframe_insert(
+                    'value', index=-1, frame=frame)
+
+        # set translation
+        # self.arm_ob.location((trans[0], -trans[2], trans[1]))
+
     def reset_pose(self):
         self.arm_ob.pose.bones[
             "root"
@@ -190,7 +238,7 @@ class SMPLX_Body:
         orig_trans = np.asarray(
             self.arm_ob.pose.bones["pelvis"].location).copy()
         # zero the pose and trans to obtain joint positions in zero pose
-        self.apply_trans_pose_shape(orig_trans, np.zeros(72), shape, scene, cam_ob)
+        self.apply_trans_pose_shape(np.zeros(3),orig_trans, np.zeros(55*3), shape,np.zeros(10), scene, cam_ob)
 
         # obtain a mesh after applying modifiers
         bpy.ops.wm.memory_statistics()
