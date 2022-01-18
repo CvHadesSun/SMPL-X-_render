@@ -16,19 +16,30 @@ Engine:
     # light: 
 #   #
   Renderer:
-    engine: CYCLES
+    engine: BLENDER_EEVEE #CYCLES
+    film_transparent: True  # hdri background transparent
+    shading_system: True
     resx: 480
     resy: 640
     camera:
-      cam_dist: 8.0
-      cam_height: 1.0
-      zrot_euler: 0.0 # 0 45 90 135 180 225 270 315
-      cam_dist_range: [7,8]
-      cam_height_range: [-5,-5]
+      radians: 8
+      height: 2
+      number_rank: 3
+      number_per_rank: 4  
+      render_list: all
+    light:
+      open: False
+      radians: 7
+      height: 4
+    HDRI: # image lights and background
+      load: True
+      image: /tmp
+
 
 #   #
   Model:
     selected: SMPLX
+    rot: [-1.5707963267948966,0,0]
     SMPL:
       max_num: 10
       online: False

@@ -1,11 +1,12 @@
 '''
 Date: 2021-12-23 15:59:44
 LastEditors: cvhadessun
-LastEditTime: 2021-12-30 17:36:59
+LastEditTime: 2022-01-18 19:19:28
 FilePath: /PG-engine/src/lib/Model/SMPL_X.py
 '''
 
 
+from webbrowser import get
 from yaml.events import NodeEvent
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
@@ -14,7 +15,7 @@ import numpy as np
 import pickle as pkl
 import os
 
-from tools.geometryutils import rodrigues2bshapes,set_pose_from_rodrigues
+from tools.geometryutils import rodrigues2bshapes,set_pose_from_rodrigues,Rodrigues
 
 
 hand_pose={}
@@ -47,7 +48,7 @@ class SMPLX_Body:
             |__joint_regressors.pkl
             |__segm_per_v_overlap.pkl
     '''
-    def __init__(self,cfg,material,gender='female',person_no=0) -> None:
+    def __init__(self,cfg,gender='female',person_no=0) -> None:
         # load fbx model
         smpl_data_folder=cfg.Engine.Model.SMPLX.smplx_dir
         self.cfg=cfg
@@ -65,17 +66,21 @@ class SMPLX_Body:
             open(os.path.join(smpl_data_folder, "data/joint_regressors.pkl"), "rb"))
         self.joint_regressor = J_regressors["J_regressor_{}".format(gender)]
         
+        armature_name = "Armature_{}".format(person_no)
         # 
         for mesh in bpy.data.objects.keys():
             if mesh == 'SMPLX-mesh-male':
                 self.ob = bpy.data.objects[mesh]
-                self.arm_obj = 'SMPLX-male'   
+                bpy.data.objects[mesh].name = armature_name+'_male'
+                self.arm_obj = armature_name+'_male' 
             if mesh == 'SMPLX-mesh-female':
                 self.ob = bpy.data.objects[mesh]
-                self.arm_obj = 'SMPLX-female'
+                bpy.data.objects[mesh].name = armature_name+'_female'
+                self.arm_obj = armature_name+'_female'
             if mesh == 'SMPLX-mesh-neutral':
                 self.ob = bpy.data.objects[mesh]
-                self.arm_obj = 'SMPLX-neutral' 
+                bpy.data.objects[mesh].name = armature_name+'_neutral'
+                self.arm_obj = armature_name+'_neutral'
         # 
         self.ob.data.use_auto_smooth = False 
         self.ob.active_material = bpy.data.materials["Material_{}".format(person_no)]
@@ -86,7 +91,7 @@ class SMPLX_Body:
         self.setState0()
         self.ob.select_set(True)
         bpy.context.view_layer.objects.active = self.ob
-        self.materials = self.create_segmentation(material)
+        self.materials = self.create_segmentation(bpy.data.materials["Material_{}".format(person_no)])
 
         # unblocking both the pose and the blendshape limits
         for k in self.ob.data.shape_keys.key_blocks.keys():
@@ -94,6 +99,9 @@ class SMPLX_Body:
             bpy.data.shape_keys["Key"].key_blocks[k].slider_max = 10
         
         bpy.context.view_layer.objects.active = self.arm_ob
+
+        self.original=np.array([0,0,0])
+        self.minz = 0
         
         # bones name
         self.part_match={ 
@@ -176,21 +184,30 @@ class SMPLX_Body:
             bpy.ops.object.mode_set(mode="OBJECT")
         return materials
 
-    def apply_trans_pose_shape(self,orient,trans,pose,shape,expression,scene,cam_ob,frame=None):
+    def apply_trans_pose_shape(self,trans,pose,shape,expression,original=np.array([0,0,0]),frame=None):
         """
         Apply trans pose and shape to character
         """
 
         # set global orientation
-        set_pose_from_rodrigues(self.arm_ob,'pelvis',orient)
+        # set_pose_from_rodrigues(self.arm_ob,'pelvis',orient)
+        rot = np.array(self.cfg.Engine.Model.rot)
+        set_pose_from_rodrigues(self.arm_ob,'root',rot)  
 
         # transform pose into rotation matrices (for pose) and pose blendshapes            
         mrots, bsh = rodrigues2bshapes(pose)
 
+        rot_mat=Rodrigues(rot)
+        if frame == 0:
+            self.original = self.original - trans
+        delta_ori = np.dot(rot_mat,original)
+        trans=np.dot(rot_mat,trans)+delta_ori
+
         # set the location of the first bone to the translation parameter
-        # self.arm_ob.pose.bones['pelvis'].location = trans
-        # self.arm_ob.pose.bones['root'].location = trans
+
         if frame is not None:
+            # self.arm_ob.pose.bones['pelvis'].location = trans
+            self.arm_ob.pose.bones['root'].location = trans
             self.arm_ob.pose.bones['root'].keyframe_insert('location', frame=frame)
 
         # set the pose of each bone to the quaternion specified by pose
@@ -223,8 +240,8 @@ class SMPLX_Body:
                 self.ob.data.shape_keys.key_blocks['Exp%03d' % ibshape].keyframe_insert(
                     'value', index=-1, frame=frame)
 
-        # set translation
-        # self.arm_ob.location((trans[0], -trans[2], trans[1]))
+        if frame==1:
+            self.minz = get_minz()
 
     def reset_pose(self):
         self.arm_ob.pose.bones[
@@ -271,3 +288,18 @@ class SMPLX_Body:
             bb.head = joint_xyz[ibone]
             bb.tail = bb.head + bboffset
         bpy.ops.object.mode_set(mode="OBJECT")
+
+
+
+def get_minz():
+    obj = bpy.context.object.children[0]
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    eval_obj_graph=obj.evaluated_get(depsgraph)
+
+    vertices_world = [vertex.co for vertex in eval_obj_graph.data.vertices]
+
+    z_min = (min(vertices_world, key=lambda item: item.z)).z
+
+    return z_min

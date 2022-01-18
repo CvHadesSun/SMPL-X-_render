@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2021-12-30 17:39:14
+LastEditTime: 2022-01-18 19:25:14
 LastEditors: cvhadessun
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -36,7 +36,15 @@ from tools.os_utils import *
 # TODO: the pipeline of data generation
 
 class PipeLine:
-    def __init__(self, cfg, prefix,name, num_model, genders=None, bg_img=None, textures=None, shape=None,sh_coeffs=None) -> None:
+    def __init__(self, 
+                cfg, 
+                prefix, 
+                num_model, 
+                genders=None, 
+                bg_img=None, 
+                textures=None, 
+                shape=None,
+                HDRI_img=None) -> None:
         '''
         output-|
                 |--name
@@ -55,17 +63,11 @@ class PipeLine:
         # else:
         self.output_path = os.path.join(cfg.Engine.output_dir, prefix)
         mkdir_safe(self.output_path)
-        mkdir_safe(os.path.join(self.output_path, name))
-        self.output = os.path.join(self.output_path, name)
+        self.output = self.output_path
         # mdkir tmp path
         self.tmp_path = os.path.join(self.output, 'experimental')
         self.cfg.Engine.tmp_path=self.tmp_path
         mkdir_safe(self.tmp_path)
-        #cp osl into tmp dir
-        osl=cfg.Engine.Material.osl
-        shutil.copy(osl,os.path.join(self.tmp_path,'mat_osl.osl'))
-        # update osl path
-        self.cfg.Engine.Material.osl=os.path.join(self.tmp_path,'mat_osl.osl')
         #
         if  genders:
             self.genders = genders
@@ -76,44 +78,27 @@ class PipeLine:
             self.textures=[]
         else:
             self.textures = textures
-
-        self.bg_img = bg_img
-        self.shape = shape
-
-        # if len(sh_coeffs.shape)>0:
-        if isinstance(sh_coeffs,type(None)):
-            self.sh_coeffs=random_light()
+        if bg_img is not None:
+            self.bg_img = bg_img
         else:
-            self.sh_coeffs=sh_coeffs
+            self.bg_img = pick_background(self.cfg.Engine.input.bg_images.dir,
+                                          self.cfg.Engine.input.bg_images.txt)  # image dir/image_name.
+    
+        self.HDRI_img =HDRI_img
+        self.shape = shape
         self.obj_list = []
-        # assign the bg and textures
-        self._set_bg()
         # init the scene
         self.init_scene()
         self.num_frames=0
+        
 
-    def _set_bg(self):
-        if not self.bg_img:
-            # random select from bg map
-            self.bg_img = pick_background(self.cfg.Engine.input.bg_images.dir,
-                                          self.cfg.Engine.input.bg_images.txt)  # image dir/image_name.
 
     def init_scene(self):
-        self.scene = Scene(self.cfg)
+        self.scene = Scene(self.cfg,self.HDRI_img)
         self.renderer = RenderLayer(self.cfg)
+        self.mat = Material(self.cfg)           
         # init model
         self._init_model()
-        # update the material scripts
-        
-        spherical_harmonics = []
-        for mname, m in self.obj_list[0].materials.items():
-            spherical_harmonics.append(m.node_tree.nodes["Script"])
-            spherical_harmonics[-1].filepath = self.cfg.Engine.Material.osl
-            spherical_harmonics[-1].update()
-
-        for ish, coeff in enumerate(self.sh_coeffs):
-            for sc in spherical_harmonics:
-                sc.inputs[ish + 1].default_value = coeff
 
         #render
         self.renderer.init_tree_nodes(self.scene.scene.node_tree,self.bg_img)
@@ -136,6 +121,8 @@ class PipeLine:
 
 
     def _init_model(self):
+
+        
         #
         # if not self.shape:
         if isinstance(self.shape,type(None)):
@@ -151,11 +138,12 @@ class PipeLine:
                                        self.cfg.Engine.input.uv_textures.dir,
                                        self.cfg.Engine.input.uv_textures.txt)
                 self.textures.append(texture)
-            material = Material(self.cfg, id,texture)
+            
+            self.mat.new_material_for_model(self.cfg, id,texture)
             if self.cfg.Engine.Model.selected == "SMPL":
-                smpl = SMPL_Body(self.cfg, material.material, gender=self.genders[id], person_no=id)
+                smpl = SMPL_Body(self.cfg, gender=self.genders[id], person_no=id)
             elif self.cfg.Engine.Model.selected == "SMPLX":
-                smpl = SMPLX_Body(self.cfg, material.material, gender=self.genders[id], person_no=id)
+                smpl = SMPLX_Body(self.cfg, gender=self.genders[id], person_no=id)
             else:
                 raise("model type no supported, please config the cfg.Engine.Model.selected.")
 
@@ -177,10 +165,6 @@ class PipeLine:
             shape=frame_info['shape'] 
         else:
             shape=self.shape
-        if 'orient' in frame_info.keys():
-            orient=frame_info['orient']
-        else:
-            orient=np.zeros([self.num_object,3])
         if 'expression' in frame_info.keys():
             expression=frame_info['expression']
         else:
@@ -191,11 +175,10 @@ class PipeLine:
             s=shape[id]
             p=pose[id]
             t=trans[id]
-            r=orient[id]
             e=expression[id]
             # apply the translation, pose and shape to the character
             self.obj_list[id].apply_trans_pose_shape(
-                r,Vector(t), p, s,e, self.scene.scene, cam_ob,frame=self.num_frames)
+                t, p, s,e,self.obj_list[0].original,frame=self.num_frames)
             
             bpy.context.view_layer.update()
         # cam_ob.animation_data_clear()
@@ -204,8 +187,12 @@ class PipeLine:
         
     def render(self):
         #
-        for part, material in self.obj_list[0].materials.items():
-            material.node_tree.nodes["Vector Math"].inputs[1].default_value[:2] = (0, 0)
+        # for part, material in self.obj_list[0].materials.items():
+        #     material.node_tree.nodes["Vector Math"].inputs[1].default_value[:2] = (0, 0)
+
+        ground = self.obj_list[0].minz
+
+        # 
         
         # LOOP TO RENDER: iterate over the keyframes and render
         

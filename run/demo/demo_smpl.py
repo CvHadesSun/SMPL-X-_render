@@ -76,7 +76,7 @@ trans=np.array(trans)
 
 id=0
 
-for i in range(3):
+for i in range(pose.shape[0]):
     p=pose[id][i:i+2].reshape(-1,72)
     # t=trans[id][i:i+2].reshape(-1,3)
     t=np.array([[-1,0,-0],[0,0,0]])

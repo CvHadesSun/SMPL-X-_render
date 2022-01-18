@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:33
-LastEditTime: 2021-12-30 17:24:48
+LastEditTime: 2022-01-18 19:12:08
 LastEditors: cvhadessun
 FilePath: /PG-engine/src/lib/Model/SMPL.py
 '''
@@ -17,7 +17,7 @@ from tools.geometryutils import rodrigues2bshapes
 
 
 class SMPL_Body:
-    def __init__(self, cfg, material, gender="female", person_no=0):
+    def __init__(self, cfg, gender="female", person_no=0):
         # load fbx model
         smpl_data_folder=cfg.Engine.Model.SMPL.smpl_dir
         self.cfg=cfg
@@ -57,7 +57,7 @@ class SMPL_Body:
         self.ob.select_set(True)
         # bpy.context.scene.objects.active = self.ob  # blender < 2.8x
         bpy.context.view_layer.objects.active = self.ob
-        self.materials = self.create_segmentation(material)
+        self.materials = self.create_segmentation(bpy.data.materials["Material_{}".format(person_no)])
 
         # unblocking both the pose and the blendshape limits
         for k in self.ob.data.shape_keys.key_blocks.keys():
@@ -66,6 +66,7 @@ class SMPL_Body:
 
         # bpy.context.scene.objects.active = self.arm_ob  # blender < 2.8x
         bpy.context.view_layer.objects.active = self.arm_ob
+
 
         # order
         self.part_match = {
@@ -158,7 +159,7 @@ class SMPL_Body:
             bpy.ops.object.mode_set(mode="OBJECT")
         return materials
 
-    def apply_trans_pose_shape(self, orient,trans, pose, shape,expression, scene, cam_ob, frame=None):
+    def apply_trans_pose_shape(self,trans, pose, shape,expression, frame=None):
         """
         Apply trans pose and shape to character
         """

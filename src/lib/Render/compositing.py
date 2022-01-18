@@ -1,40 +1,51 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:50
-LastEditTime: 2021-11-19 15:08:01
-LastEditors: Please set LastEditors
-FilePath: /PG-engine/src/lib/render/compositing.py
+LastEditTime: 2022-01-18 18:03:21
+LastEditors: cvhadessun
+FilePath: /PG-engine/src/lib/Render/compositing.py
 '''
 from os.path import join
 import bpy
-from mathutils import Matrix, Euler
-import math
+from tools.file_op import mkdir_safe
+
 
 class RenderLayer:
     
     def __init__(self,cfg) -> None:
         self.cfg=cfg
         self.res={}
-        #
-        self.set_output()
+        self.init_renderer()
 
-    def set_output(self):
+
+    def set_output(self,path):
         # set the output file name
-        print('-'*20,self.cfg.Engine.tmp_path,'-'*20)
+        # print('-'*20,self.cfg.Engine.tmp_path,'-'*20)
         
         if self.cfg.Engine.output.segmentation:
-            self.res['segm'] = join(self.cfg.Engine.tmp_path,"%05d_segm" %(self.cfg.Engine.idx))
+            self.res['segm'] = join(path,"%05d_segm" %(self.cfg.Engine.idx))
+            mkdir_safe(self.res['segm'])
         if self.cfg.Engine.output.depth:
-            self.res['depth'] = join(self.cfg.Engine.tmp_path,"%05d_depth" %(self.cfg.Engine.idx))
+            self.res['depth'] = join(path,"%05d_depth" %(self.cfg.Engine.idx))
+            mkdir_safe(self.res['depth'])
         if self.cfg.Engine.output.depth:
-            self.res['normal'] = join(self.cfg.Engine.tmp_path,"%05d_normal" %(self.cfg.Engine.idx))
+            self.res['normal'] = join(path,"%05d_normal" %(self.cfg.Engine.idx))
+            mkdir_safe(self.res['normal'])
         if self.cfg.Engine.output.fg:
-            self.res['fg'] = join(self.cfg.Engine.tmp_path,"%05d_fg" %(self.cfg.Engine.idx))
+            self.res['fg'] = join(path,"%05d_fg" %(self.cfg.Engine.idx))
+            mkdir_safe(self.res['fg'])
         if self.cfg.Engine.output.gtflow:
-            self.res['gtflow'] = join(self.cfg.Engine.tmp_path,"%05d_gtflow" %(self.cfg.Engine.idx))
+            self.res['gtflow'] = join(path,"%05d_gtflow" %(self.cfg.Engine.idx))
+            mkdir_safe(self.res['gtflow'])
 
 
-    def init_tree_nodes(self,tree,bg_img_name=None):
+    def init_tree_nodes(self,camera_name,bg_img_name=None):
+        bpy.context.scene.use_nodes = True
+        tree = bpy.context.scene.node_tree
+
+        root_path = join(self.cfg.Engine.tmp_path,camera_name)
+        self.set_output(root_path)
+        
         # clear default nodes
         for n in tree.nodes:
             tree.nodes.remove(n)
@@ -49,7 +60,7 @@ class RenderLayer:
         if bg_img_name is not None:
             bg_img = bpy.data.images.load(bg_img_name)
             bg_im.image = bg_img
-            print("Set the background image!")
+            # print("Set the background image!")
 
         # create node for mixing foreground and background images
         mix = tree.nodes.new("CompositorNodeMixRGB")
@@ -124,12 +135,10 @@ class RenderLayer:
         resy = self.cfg.Engine.Renderer.resy
         
         scn = bpy.context.scene
-        scn.cycles.film_transparent = True
-        # blender < 2.8x
-        # scn.render.layers['RenderLayer'].use_pass_vector = True
-        # scn.render.layers['RenderLayer'].use_pass_normal = True
-        # scene.render.layers['RenderLayer'].use_pass_emit = True
-        # scene.render.layers['RenderLayer'].use_pass_material_index = True
+        scn.render.engine = self.cfg.Engine.Renderer.engine 
+        scn.render.film_transparent = self.cfg.Engine.Render.film_transparent
+        scn.shading_system = self.cfg.Engine.Render.shading_system
+
         vl = bpy.context.view_layer
         vl.use_pass_vector = True
         vl.use_pass_normal = True
