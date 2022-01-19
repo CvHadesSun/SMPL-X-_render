@@ -1,7 +1,7 @@
 '''
 Date: 2021-12-23 15:59:44
 LastEditors: cvhadessun
-LastEditTime: 2022-01-18 19:19:28
+LastEditTime: 2022-01-19 16:58:30
 FilePath: /PG-engine/src/lib/Model/SMPL_X.py
 '''
 
@@ -67,25 +67,26 @@ class SMPLX_Body:
         self.joint_regressor = J_regressors["J_regressor_{}".format(gender)]
         
         armature_name = "Armature_{}".format(person_no)
-        # 
+
+        bpy.context.active_object.name = armature_name   # rename
+
+        
         for mesh in bpy.data.objects.keys():
             if mesh == 'SMPLX-mesh-male':
                 self.ob = bpy.data.objects[mesh]
-                bpy.data.objects[mesh].name = armature_name+'_male'
-                self.arm_obj = armature_name+'_male' 
+
             if mesh == 'SMPLX-mesh-female':
                 self.ob = bpy.data.objects[mesh]
-                bpy.data.objects[mesh].name = armature_name+'_female'
-                self.arm_obj = armature_name+'_female'
+
             if mesh == 'SMPLX-mesh-neutral':
                 self.ob = bpy.data.objects[mesh]
-                bpy.data.objects[mesh].name = armature_name+'_neutral'
-                self.arm_obj = armature_name+'_neutral'
+
+
         # 
         self.ob.data.use_auto_smooth = False 
         self.ob.active_material = bpy.data.materials["Material_{}".format(person_no)]
         self.ob.data.shape_keys.animation_data_clear() 
-        self.arm_ob = bpy.data.objects[self.arm_obj]   
+        self.arm_ob = bpy.data.objects[armature_name]   
         self.arm_ob.animation_data_clear()
         #
         self.setState0()
@@ -99,6 +100,8 @@ class SMPLX_Body:
             bpy.data.shape_keys["Key"].key_blocks[k].slider_max = 10
         
         bpy.context.view_layer.objects.active = self.arm_ob
+
+
 
         self.original=np.array([0,0,0])
         self.minz = 0
@@ -248,14 +251,14 @@ class SMPLX_Body:
             "root"
             ].rotation_quaternion = Quaternion((1, 0, 0, 0))
 
-    def reset_joint_positions(self, shape, scene, cam_ob):
+    def reset_joint_positions(self, shape):
         """
         Reset the joint positions of the character according to its new shape
         """
         orig_trans = np.asarray(
             self.arm_ob.pose.bones["pelvis"].location).copy()
         # zero the pose and trans to obtain joint positions in zero pose
-        self.apply_trans_pose_shape(np.zeros(3),orig_trans, np.zeros(55*3), shape,np.zeros(10), scene, cam_ob)
+        self.apply_trans_pose_shape(orig_trans, np.zeros(55*3), shape,np.zeros(10))
 
         # obtain a mesh after applying modifiers
         bpy.ops.wm.memory_statistics()

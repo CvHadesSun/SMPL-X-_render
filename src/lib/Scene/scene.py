@@ -1,18 +1,17 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:47:29
-LastEditTime: 2022-01-18 18:21:38
+LastEditTime: 2022-01-19 16:10:18
 LastEditors: cvhadessun
 FilePath: /PG-engine/src/lib/Scene/scene.py
 '''
 
-from hashlib import new
-from tkinter.messagebox import NO
+
 import bpy
-from Render.compositing import RenderLayer
+from lib.Render.compositing import RenderLayer
 from tools.cam import create_cameras_array
 from tools.light import new_light
-from Material.shading import Material
+from lib.Material.shading import Material
 
 class Scene:
     def __init__(self, cfg,hdri_img=None) -> None:

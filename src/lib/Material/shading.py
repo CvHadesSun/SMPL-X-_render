@@ -1,11 +1,10 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:45:40
-LastEditTime: 2022-01-18 17:38:33
+LastEditTime: 2022-01-19 16:10:38
 LastEditors: cvhadessun
 FilePath: /PG-engine/src/lib/Material/shading.py
 '''
-from tkinter.messagebox import NO
 import bpy
 
 # create_sh_material(material.node_tree, sh_dst, cloth_img_name)

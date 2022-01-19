@@ -1,14 +1,15 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:50
-LastEditTime: 2022-01-18 18:03:21
+LastEditTime: 2022-01-19 16:43:08
 LastEditors: cvhadessun
 FilePath: /PG-engine/src/lib/Render/compositing.py
 '''
 from os.path import join
 import bpy
 from tools.file_op import mkdir_safe
-
+import os
+from tools.os_utils import disable_output_end,disable_output_start
 
 class RenderLayer:
     
@@ -136,8 +137,10 @@ class RenderLayer:
         
         scn = bpy.context.scene
         scn.render.engine = self.cfg.Engine.Renderer.engine 
-        scn.render.film_transparent = self.cfg.Engine.Render.film_transparent
-        scn.shading_system = self.cfg.Engine.Render.shading_system
+        scn.render.film_transparent = self.cfg.Engine.Renderer.film_transparent
+        # scn.shading_system = self.cfg.Engine.Renderer.shading_system
+        if self.cfg.Engine.Renderer.engine == "CYCLES":
+            scn.cycles.shading_system = self.cfg.Engine.Renderer.shading_system
 
         vl = bpy.context.view_layer
         vl.use_pass_vector = True
@@ -150,4 +153,58 @@ class RenderLayer:
         scn.render.resolution_y = resx
         scn.render.resolution_percentage = 100
         scn.render.image_settings.file_format = "PNG"
+
+
+
+    def render_multi_camera(self,num_frame,bg_img):
+        '''
+        num_frame : the number of frames to render;
+        bg_img: compositing background image
+        '''
+
+        # selected camera
+        camera_list_all =[]
+        camera_render = []
+        num_camera = self.cfg.Engine.Renderer.camera.number_rank * self.cfg.Engine.Renderer.camera.number_per_rank 
+
+        for i in range(1,num_camera+1):
+            cam_name = "Camera.{:03}".format(i)
+            camera_list_all.append(cam_name)
+        if len(self.cfg.Engine.Renderer.camera.render_list)>1 or self.cfg.Engine.Renderer.camera.render_list[0]!=-1: 
+            render_list = self.cfg.Engine.Renderer.camera.render_list
+            for item in render_list:
+                index = int(item)-1
+                camera_render.append(camera_list_all[index])
+        else:
+            camera_render = camera_list_all
+
+    
+        # rgb image
+        rgb_root_path = os.path.dirname(self.cfg.Engine.tmp_path)
+        rgb_root_path = join(rgb_root_path,'RGB')
+        mkdir_safe(rgb_root_path)
+
+        #scn
+        scene = bpy.context.scene
+
+        # render
+        for ob in scene.objects:
+            if ob.type == 'CAMERA' and ob.name in camera_render:
+                self.init_tree_nodes(ob.name,bg_img)
+                rgb_path = join(rgb_root_path,ob.name)
+                mkdir_safe(rgb_path)
+
+                for frame_id in range(1,num_frame):
+                    scene.frame_set(frame_id)
+                    scene.camera = ob # set camera
+                    scene.render.filepath = os.path.join(rgb_path,"Image{:04}.png".format(frame_id))
+                    old = disable_output_start()
+                    bpy.ops.render.render(write_still=True)
+                    disable_output_end(old)
+
+        
+
+
+
+
 

@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2022-01-18 19:25:14
+LastEditTime: 2022-01-19 16:55:02
 LastEditors: cvhadessun
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -17,6 +17,7 @@ import numpy as np
 import shutil
 from mathutils import Vector
 
+
 # cur_dir = os.path.dirname(os.path.abspath(__file__))
 # root_dir = os.path.join(cur_dir, '..')
 # sys.path.insert(0, os.path.join(root_dir, 'src'))
@@ -31,6 +32,7 @@ from lib.Render.compositing import RenderLayer
 from tools.light import random_light
 from tools.cam import set_camera
 from tools.os_utils import *
+
 
 
 # TODO: the pipeline of data generation
@@ -99,24 +101,12 @@ class PipeLine:
         self.mat = Material(self.cfg)           
         # init model
         self._init_model()
-
-        #render
-        self.renderer.init_tree_nodes(self.scene.scene.node_tree,self.bg_img)
-        self.renderer.init_renderer()
-
-        # set cam
-        # random get cam params
-        # cam_height, cam_dist = pick_cam(self.cfg.Engine.Renderer.camera.cam, cam_dist_range)
-        cam_height = self.cfg.Engine.Renderer.camera.cam_height
-        cam_dist = self.cfg.Engine.Renderer.camera.cam_dist
-        self.cam_ob = set_camera(cam_dist=cam_dist, cam_height=cam_height, zrot_euler=self.cfg.Engine.Renderer.camera.zrot_euler)
-
-        for id in range(self.num_object):
-            self.obj_list[id].reset_joint_positions(
-            self.shape[id], self.scene.scene, self.cam_ob
-            )
-        # smpl_body_list[person_no].arm_ob.animation_data_clear()
-        self.cam_ob.animation_data_clear()
+        
+        # for id in range(self.num_object):
+        #     self.obj_list[id].reset_joint_positions(
+        #     self.shape[id]
+        #     )
+ 
 
 
 
@@ -138,8 +128,7 @@ class PipeLine:
                                        self.cfg.Engine.input.uv_textures.dir,
                                        self.cfg.Engine.input.uv_textures.txt)
                 self.textures.append(texture)
-            
-            self.mat.new_material_for_model(self.cfg, id,texture)
+            self.mat.new_material_for_model(id,texture)
             if self.cfg.Engine.Model.selected == "SMPL":
                 smpl = SMPL_Body(self.cfg, gender=self.genders[id], person_no=id)
             elif self.cfg.Engine.Model.selected == "SMPLX":
@@ -160,7 +149,6 @@ class PipeLine:
         # input per frame info: pose and trans
         pose=frame_info['pose']  #[N,72]
         trans=frame_info['trans'] #[N,3]
-        cam_ob=frame_info['cam'] 
         if 'shape' in frame_info.keys():
             shape=frame_info['shape'] 
         else:
@@ -192,22 +180,11 @@ class PipeLine:
 
         ground = self.obj_list[0].minz
 
-        # 
-        
-        # LOOP TO RENDER: iterate over the keyframes and render
-        
-        mkdir_safe(os.path.join(self.output,'rgb'))
-        rgb_path=os.path.join(self.output,'rgb')
-        # mkdir dir to output
-        for seq_frame, i in enumerate(range(self.num_frames)):
-            self.scene.scene.frame_set(seq_frame)
-            self.scene.scene.render.filepath = os.path.join(rgb_path, "Image{:04d}.png".format(seq_frame))
-            # disable render output
-            old = disable_output_start()
-            # Render
-            bpy.ops.render.render(write_still=True)
-            # disable output redirection
-            disable_output_end(old)
+        # new camera array
+        self.scene.create_camera_array(ground)
+
+        # render 
+        self.renderer.render_multi_camera(self.num_frames,self.bg_img)
 
     
             

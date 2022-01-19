@@ -3,7 +3,7 @@
 Engine: 
   root_dir: root_path
   idx: 0
-  output_dir: test_knn
+  output_dir: output
   #
 #   Module:
 #     scene:
@@ -26,7 +26,7 @@ Engine:
       height: 2
       number_rank: 3
       number_per_rank: 4  
-      render_list: all
+      render_list:  [9,10,11,12] # all :[-1]
     light:
       open: False
       radians: 7
