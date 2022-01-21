@@ -12,7 +12,7 @@ Engine:
 #     mode: SMPL
 #   #
   Material:
-    osl: /home/swh/work_space/smpl-data/spher_harm/sh.osl
+    osl: /home/swh/workspace/smpl-data/spher_harm/sh.osl
     # light: 
 #   #
   Renderer:
@@ -44,7 +44,7 @@ Engine:
       max_num: 10
       online: False
       gender: female
-      smpl_dir: /home/swh/work_space/smpl-data/smpl_data
+      smpl_dir: /home/swh/workspace/smpl-data/smpl_data
       smpl_data_filename: smpl_data.npz
       segm_overlap: segm_per_v_overlap.pkl
       J_regressor: joint_regressors.pkl
@@ -53,7 +53,7 @@ Engine:
       max_num: 10
       onlien: False
       gender: female
-      smplx_dir: /home/swh/work_space/smpl-data/smplx
+      smplx_dir: /home/swh/workspace/smpl-data/smplx
       segm_overlap: segm_per_v_overlap.pkl
       J_regressor: joint_regressors.pkl
       # hand_pose: relaxed # flat or input
@@ -62,13 +62,13 @@ Engine:
 
   input:
     bg_images:
-      dir: /home/swh/work_space/smpl-data/pg-engine/bg_imgs/backgrounds
+      dir: /home/swh/workspace/smpl-data/pg-engine/bg_imgs/backgrounds
       txt: test_img.txt
       data: test
       
     uv_textures:
       clothing_option: nongrey
-      dir: /home/swh/work_space/smpl-data/smpl_data/textures
+      dir: /home/swh/workspace/smpl-data/smpl_data/textures
       data: female
       txt: female_all.txt
 

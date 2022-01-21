@@ -1,3 +1,9 @@
+'''
+Date: 2022-01-21 16:54:30
+LastEditors: cvhadessun
+LastEditTime: 2022-01-21 18:00:59
+FilePath: /PG-engine/run/video_render.py
+'''
 
 import os
 from os.path import join
@@ -22,19 +28,20 @@ def parser_upate():
     return parser.parse_args()
 
 
-data_dir='../test_knn'
+data_dir='../output/debug/experimental/Camera.009/00000_fg'
 
 cam_name='camera_0000'
 
 if __name__=="__main__":
     # args=parser_upate()
 
-    mkdir_safe(os.path.join(data_dir,'videos'))
+    output_video=os.path.join(os.path.dirname(data_dir),'videos')
+    mkdir_safe(output_video)
 
-    output_video=os.path.join(os.path.join(data_dir,'videos'))
-
-    for i in range(50):
-        dir=os.path.join(data_dir,str(i),cam_name)
+    for i in range(1):
+        print(i)
+        # dir=os.path.join(data_dir,str(i),cam_name)
+        dir = data_dir
         video_name='{:02d}'.format(i)+'.mp4'
         fg_mp4_path=os.path.join(output_video,video_name)
         # 
@@ -46,9 +53,10 @@ if __name__=="__main__":
             "{}"
             " -c:v h264 -pix_fmt yuv420p -crf 23 "
             "{}"
-            "".format(join(dir,'experimental/00000_fg', "Image%04d.png"), fg_mp4_path)
+            "".format(join(dir, "Image%04d.png"), fg_mp4_path)
         )
-
+        print(dir)
+        print(os.path.exists(join(dir, "Image0001.png")))
         os.system(cmd_ffmpeg_fg)
 
     

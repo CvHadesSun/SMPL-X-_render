@@ -1,7 +1,7 @@
 '''
 Date: 2022-01-19 15:49:08
 LastEditors: cvhadessun
-LastEditTime: 2022-01-19 16:35:18
+LastEditTime: 2022-01-21 17:35:34
 FilePath: /PG-engine/run/demo/demo_smplx_new.py
 '''
 import os
@@ -49,10 +49,10 @@ render=PipeLine(cfg,'debug', num_model,
 
 
 
-pose_file = '/home/swh/work_space/smpl-data/ACCAD/s011/walkdog_stageii.npz'
+pose_file = '/home/swh/workspace/smpl-data/ACCAD/s011/walkdog_stageii.npz'
 trans_pose,trans_trans,trans_orient,trans_shapes=load_pose_from_ACCAD(pose_file)
 
-for i in  range(100):
+for i in  range(300):
     pose = trans_pose[i].reshape(1,-1)
     shape = trans_shapes[:10].reshape(1,-1)
     t = trans_trans[i].reshape(1,-1)

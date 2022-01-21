@@ -1,23 +1,47 @@
-<!--
- * @Author: cvhades
- * @Date: 2021-11-09 16:15:16
- * @LastEditTime: 2021-11-26 15:54:25
- * @LastEditors: Please set LastEditors
- * @FilePath: /PG-engine/README.md
--->
-
 # PG-engine (pose generator engine)
-The engine to generate human pose dataset based on blender.(blender2.92).  Committed to  more reality human render engine. Welcom join this project and develop it.
+The engine to generate human pose dataset based on blender.(blender2.92 or higher).  Committed to  more reality human render engine. Welcom joining this project and develop it.
 
+![render](assets/00.gif)
 
-# demo
-## SINGLE-VIEW
-![SMPL_example](assets/single_view.png)
+## Installation
 
+Installation process in linux os, and for other other os, blender add-on is avaliable, or you can modify installation process for your os.
 
-## MULTI-VIEW
+1. blender installation
 
-<img src="assets/multi-view/multi-view.gif"  />
+   - Download blender in [offical website](https://download.blender.org/release/) (blender2.92 or higher)
+   - Extract blender file into your path
+   - Download the get-pip.py and install  for blender env pip install 
+
+   ```shell
+   wget https://bootstrap.pypa.io/get-pip.py
+   blender-2.92.0-linux64/2.92/python/bin/python3.7m get-pip.py
+   # new you can pip install some package
+   blender-2.92.0-linux64/2.92/python/bin/pip install scipy
+   blender-2.92.0-linux64/2.92/python/bin/pip install joblib
+   blender-2.92.0-linux64/2.92/python/bin/pip install pyyaml
+   blender-2.92.0-linux64/2.92/python/bin/pip install tqdm
+   ```
+
+2. install some package with anaconda
+
+   ```shell
+   conda create -n blender-env python=3.7
+   conda activate blender-env
+   conda install -c conda-forge openexr-python
+   conda install -c conda-forge ffmpeg
+   conda install scipy
+   pip install chumpy
+   # copy the conda env package into blender path
+   cp -r ${CONDA_PREFIX}/lib/python3.7/site-packages/OpenEXR* blender-2.92.0-linux64/2.92/python/lib/python3.7/site-packages/
+   cp ${CONDA_PREFIX}/lib/*.so* blender-2.92.0-linux64/2.92/python/lib/
+   cp ${CONDA_PREFIX}/bin/ff* blender-2.92.0-linux64/2.92/python/bin
+   #
+   ```
+
+3. Download some necessary  data:
+
+## [Document](doc.md)
 
 ## Framework
 
@@ -27,10 +51,10 @@ The engine to generate human pose dataset based on blender.(blender2.92).  Commi
     -  Textures of 3D model
     -  Lights of scene
     -  Other material opertaion.
-- [x] Render : Using blender engine to render source.
+- [x] Render : Using blender engine to render animation.
 - [x] Model : The object and animation engine.
   - [x] SMPL
-  - [ ] SMPL-X
+  - [x] SMPL-X
   - [ ] Self-designed model
 
 ### 2.INPUT
@@ -46,13 +70,4 @@ The engine to generate human pose dataset based on blender.(blender2.92).  Commi
 - [x] labels
 
 
-## Some detail
 
-### camera 
-```
-Euler "XYZ":[yaw,pitch,roll]
-
-X->r
-Y->p
-Z->y
-```
