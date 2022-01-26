@@ -1,7 +1,7 @@
 '''
 Date: 2022-01-19 15:49:08
 LastEditors: cvhadessun
-LastEditTime: 2022-01-21 17:35:34
+LastEditTime: 2022-01-26 15:38:41
 FilePath: /PG-engine/run/demo/demo_smplx_new.py
 '''
 import os
@@ -44,8 +44,11 @@ def load_pose_from_ACCAD(file_path):
 
 num_model=1
 cfg.Engine.Model.selected = "SMPLX"
+textures = '/home/swh/workspace/PG-engine/assets/smplx_texture_f_alb.png'
+bg = '/home/swh/workspace/PG-engine/assets/background_test.jpg'
 render=PipeLine(cfg,'debug', num_model,
-                genders=['female'])
+                genders=['female'],
+                textures=[textures],bg_img=bg)
 
 
 

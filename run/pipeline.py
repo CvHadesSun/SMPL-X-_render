@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-10 17:12:09
-LastEditTime: 2022-01-19 16:55:02
+LastEditTime: 2022-01-26 15:14:38
 LastEditors: cvhadessun
 FilePath: /PG-engine/run/pipeline.py
 '''
@@ -32,6 +32,7 @@ from lib.Render.compositing import RenderLayer
 from tools.light import random_light
 from tools.cam import set_camera
 from tools.os_utils import *
+from lib.Render.output_info import Label
 
 
 
@@ -66,6 +67,7 @@ class PipeLine:
         self.output_path = os.path.join(cfg.Engine.output_dir, prefix)
         mkdir_safe(self.output_path)
         self.output = self.output_path
+        self.cfg.Engine.output_dir = self.output
         # mdkir tmp path
         self.tmp_path = os.path.join(self.output, 'experimental')
         self.cfg.Engine.tmp_path=self.tmp_path
@@ -101,13 +103,8 @@ class PipeLine:
         self.mat = Material(self.cfg)           
         # init model
         self._init_model()
-        
-        # for id in range(self.num_object):
-        #     self.obj_list[id].reset_joint_positions(
-        #     self.shape[id]
-        #     )
+        self.labeler = Label(self.cfg,self.num_object,self.genders,self.shape)
  
-
 
 
     def _init_model(self):
@@ -186,6 +183,9 @@ class PipeLine:
         # render 
         self.renderer.render_multi_camera(self.num_frames,self.bg_img)
 
+        # label generator
+        
+        self.labeler.label_generator(self.obj_list,self.num_frames)
     
             
 

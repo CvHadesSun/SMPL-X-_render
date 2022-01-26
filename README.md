@@ -41,7 +41,7 @@ Installation process in linux os, and for other other os, blender add-on is aval
 
 3. Download some necessary  data:
 
-## [Document](doc.md)
+## [Document](doc/doc.md)
 
 ## Framework
 

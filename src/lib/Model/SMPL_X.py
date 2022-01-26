@@ -1,7 +1,7 @@
 '''
 Date: 2021-12-23 15:59:44
 LastEditors: cvhadessun
-LastEditTime: 2022-01-19 16:58:30
+LastEditTime: 2022-01-26 14:20:22
 FilePath: /PG-engine/src/lib/Model/SMPL_X.py
 '''
 
@@ -250,6 +250,32 @@ class SMPLX_Body:
         self.arm_ob.pose.bones[
             "root"
             ].rotation_quaternion = Quaternion((1, 0, 0, 0))
+
+    def get_bone_locs(self, scene, cam_ob):
+        n_bones = 55
+        render_scale = scene.render.resolution_percentage / 100
+        render_size = (
+            int(scene.render.resolution_x * render_scale),
+            int(scene.render.resolution_y * render_scale),
+        )
+        bone_locations_2d = np.empty((n_bones, 2))
+        bone_locations_3d = np.empty((n_bones, 3), dtype="float32")
+
+        # obtain the coordinates of each bone head in image space
+        for ibone in range(n_bones):
+            bone = self.arm_ob.pose.bones[self.part_match['bone_%02d' % ibone]]
+            # co_2d = world_to_camera_view(scene, cam_ob, self.arm_ob.matrix_world * bone.head)  # blender < 2.8x
+            co_2d = world_to_camera_view(
+                scene, cam_ob, self.arm_ob.matrix_world @ bone.head
+            )
+            # co_3d = self.arm_ob.matrix_world * bone.head  # blender < 2.8x
+            co_3d = self.arm_ob.matrix_world @ bone.head
+            bone_locations_3d[ibone] = (co_3d.x, co_3d.y, co_3d.z)
+            bone_locations_2d[ibone] = (
+                round(co_2d.x * render_size[0]),
+                round(co_2d.y * render_size[1]),
+            )
+        return bone_locations_2d, bone_locations_3d
 
     def reset_joint_positions(self, shape):
         """

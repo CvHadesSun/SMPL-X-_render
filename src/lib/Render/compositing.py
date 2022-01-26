@@ -1,7 +1,7 @@
 '''
 Author: cvhades
 Date: 2021-11-09 16:46:50
-LastEditTime: 2022-01-19 16:43:08
+LastEditTime: 2022-01-26 15:10:59
 LastEditors: cvhadessun
 FilePath: /PG-engine/src/lib/Render/compositing.py
 '''
@@ -58,6 +58,11 @@ class RenderLayer:
         # create node for background image
         bg_im = tree.nodes.new("CompositorNodeImage")
         bg_im.location = -300, 30
+
+        scale = tree.nodes.new("CompositorNodeScale")
+        scale.location = -300, 60
+        scale.space = 'RENDER_SIZE'
+
         if bg_img_name is not None:
             bg_img = bpy.data.images.load(bg_img_name)
             bg_im.image = bg_img
@@ -109,7 +114,8 @@ class RenderLayer:
 
 
         # merge fg and bg images
-        tree.links.new(bg_im.outputs[0], mix.inputs[1])
+        tree.links.new(bg_im.outputs[0],scale.inputs[0]) # scale the bg image
+        tree.links.new(scale.outputs[0],mix.inputs[1])
         tree.links.new(layers.outputs["Image"], mix.inputs[2])
 
         tree.links.new(mix.outputs[0], composite_out.inputs[0])  # bg+fg image

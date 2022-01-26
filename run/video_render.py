@@ -1,7 +1,7 @@
 '''
 Date: 2022-01-21 16:54:30
 LastEditors: cvhadessun
-LastEditTime: 2022-01-21 18:00:59
+LastEditTime: 2022-01-26 15:22:08
 FilePath: /PG-engine/run/video_render.py
 '''
 
@@ -28,8 +28,8 @@ def parser_upate():
     return parser.parse_args()
 
 
-data_dir='../output/debug/experimental/Camera.009/00000_fg'
-
+# data_dir='../output/debug/experimental/Camera.009/00000_fg'
+data_dir='../output/debug/RGB/Camera.009'
 cam_name='camera_0000'
 
 if __name__=="__main__":
@@ -55,8 +55,6 @@ if __name__=="__main__":
             "{}"
             "".format(join(dir, "Image%04d.png"), fg_mp4_path)
         )
-        print(dir)
-        print(os.path.exists(join(dir, "Image0001.png")))
         os.system(cmd_ffmpeg_fg)
 
     

@@ -26,7 +26,7 @@ Engine:
       height: 2
       number_rank: 3
       number_per_rank: 4  
-      render_list:  [9,10,11,12] # all :[-1]
+      render_list:  [9] # all :[-1]
     light:
       open: False
       radians: 7
@@ -74,27 +74,19 @@ Engine:
 
   output:
     format: video # image
-    root_dir: output
     segmentation: True
     depth: True
     normal: True
     fg: True
     gtflow: True
     labels:
-      format: .mat
-      output_name: label_info
-      bg: True
-      cloth: True
+      dir_name: labelInfo
       gender: True
       joints2D: True
       joints3D: True
       pose: False
       shape: False
-      source: False
-      zrot_euler: False
-      light: False
-      cam_height: False
-      cam_dist: False
+      camera: True
     
 
     
