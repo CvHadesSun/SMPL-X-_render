@@ -1,7 +1,7 @@
 '''
 Date: 2021-12-23 15:59:44
 LastEditors: cvhadessun
-LastEditTime: 2022-01-26 14:20:22
+LastEditTime: 2022-02-10 15:30:21
 FilePath: /PG-engine/src/lib/Model/SMPL_X.py
 '''
 
@@ -65,6 +65,8 @@ class SMPLX_Body:
         J_regressors = pkl.load(
             open(os.path.join(smpl_data_folder, "data/joint_regressors.pkl"), "rb"))
         self.joint_regressor = J_regressors["J_regressor_{}".format(gender)]
+
+        self.vis_info = None # need to load the vis_info 
         
         armature_name = "Armature_{}".format(person_no)
 
@@ -92,7 +94,7 @@ class SMPLX_Body:
         self.setState0()
         self.ob.select_set(True)
         bpy.context.view_layer.objects.active = self.ob
-        self.materials = self.create_segmentation(bpy.data.materials["Material_{}".format(person_no)])
+        # self.materials = self.create_segmentation(bpy.data.materials["Material_{}".format(person_no)])
 
         # unblocking both the pose and the blendshape limits
         for k in self.ob.data.shape_keys.key_blocks.keys():
@@ -127,6 +129,7 @@ class SMPLX_Body:
             'bone_52':  'right_thumb1', 'bone_53':  'right_thumb2', 'bone_54':  'right_thumb3'
             }
 
+        
     def setState0(self):
         for ob in bpy.data.objects.values():
             # ob.select = False  # blender < 2.8x
@@ -260,6 +263,8 @@ class SMPLX_Body:
         )
         bone_locations_2d = np.empty((n_bones, 2))
         bone_locations_3d = np.empty((n_bones, 3), dtype="float32")
+        
+        # print("render size",render_size[0],"-",render_size[1])
 
         # obtain the coordinates of each bone head in image space
         for ibone in range(n_bones):
@@ -276,6 +281,15 @@ class SMPLX_Body:
                 round(co_2d.y * render_size[1]),
             )
         return bone_locations_2d, bone_locations_3d
+
+    def get_vis_info(self,scene, cam_ob):
+        vertices =self.ob.data.vertices # get the verts
+        verts = [self.arm_ob.matrix_world * vert.co for vert in vertices] 
+        parts_info = {}
+        for part in self.vis_info:
+            pass
+
+
 
     def reset_joint_positions(self, shape):
         """

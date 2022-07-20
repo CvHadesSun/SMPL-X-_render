@@ -61,6 +61,8 @@ class Label:
             #get label
             for ob in scene.objects:
                 if ob.type == 'CAMERA' and ob.name in camera_render:
+                    extr = np.asarray(ob.matrix_world)
+                    intr = self.get_calibration_matrix_K_from_blender(ob,scene)
                     label_path =  join(self.output_dir,ob.name+'_label.npz') 
                     label_2d=[]
                     label_3d=[]
@@ -78,12 +80,31 @@ class Label:
                         self.base_info['joints2D'] = l2d
                     if self.cfg.Engine.output.labels.joints3D:
                         self.base_info['joints3D'] = l3d
+                    self.base_info['intrinsic'] = intr
+                    self.base_info['extrinsic'] = extr
                     np.savez(label_path,**self.base_info)
         else:
             return 
 
-
-        
-        
-        
-    
+    def get_calibration_matrix_K_from_blender(self,cam,scene):
+        f_in_mm = cam.data.lens
+        resolution_x_in_px = scene.render.resolution_x
+        resolution_y_in_px = scene.render.resolution_y
+        scale = scene.render.resolution_percentage / 100
+        sensor_width_in_mm = cam.data.sensor_width
+        sensor_height_in_mm = cam.data.sensor_height
+        pixel_aspect_ratio = scene.render.pixel_aspect_x / scene.render.pixel_aspect_y
+        if (cam.data.sensor_fit == 'VERTICAL'):
+            s_u = resolution_x_in_px * scale / sensor_width_in_mm / pixel_aspect_ratio 
+            s_v = resolution_y_in_px * scale / sensor_height_in_mm
+        else:
+            pixel_aspect_ratio = scene.render.pixel_aspect_x / scene.render.pixel_aspect_y
+            s_u = resolution_x_in_px * scale / sensor_width_in_mm
+            s_v = resolution_y_in_px * scale * pixel_aspect_ratio / sensor_height_in_mm
+        alpha_u = f_in_mm * s_u
+        alpha_v = f_in_mm * s_v
+        u_0 = resolution_x_in_px*scale / 2
+        v_0 = resolution_y_in_px*scale / 2
+        skew = 0 # only use rectangular pixels
+        K = np.array([[alpha_u,skew,u_0],[0,alpha_v,v_0],[0,0,1]])
+        return K
